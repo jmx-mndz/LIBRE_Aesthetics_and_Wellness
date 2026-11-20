@@ -139,6 +139,30 @@ const LIBRE_CONFIG = {
     }
   })();
 
+  /* ---------- Adaptive header: never let menu items overlap ---------- */
+  (() => {
+    const hdr = $(".site-header");
+    if (!hdr) return;
+    const nav = $(".nav", hdr), list = $(".nav__list", hdr), actions = $(".header-actions", hdr), box = $(".container", hdr);
+    const overflowing = () => {
+      if (!nav || getComputedStyle(nav).display === "none") return false;
+      const gap = 16;
+      return list.scrollWidth > nav.clientWidth + 1 || nav.getBoundingClientRect().right > actions.getBoundingClientRect().left - gap || box.scrollWidth > box.clientWidth + 1;
+    };
+    const fit = () => {
+      hdr.classList.remove("h-compact", "h-collapsed");
+      if (overflowing()) {
+        hdr.classList.add("h-compact");
+        if (overflowing()) { hdr.classList.remove("h-compact"); hdr.classList.add("h-compact", "h-collapsed"); }
+      }
+      hdr.classList.add("h-measured");
+    };
+    fit();
+    let rid; window.addEventListener("resize", () => { cancelAnimationFrame(rid); rid = requestAnimationFrame(fit); });
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    window.addEventListener("load", fit);
+  })();
+
   /* ---------- Loading: coastal preloader (first visit) + page curtain ---------- */
   const pre = $(".preloader");
   const curtain = $(".curtain");
