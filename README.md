@@ -1,4 +1,4 @@
-# LIBRE Aesthetics & Wellness — Website v4
+# LIBRE Aesthetics & Wellness — Website v5 (English + Español)
 
 Static multi-page site: plain HTML + one CSS file + one JS file. No build step. Upload the whole folder to any host, or paste each page into GHL custom code.
 
@@ -42,6 +42,16 @@ Every "Book" button on the site goes to `book.html?service=<key>#inquiry`, and t
 **Option B — keep this custom form (recommended for the design).** In GHL create a Workflow with an **Inbound Webhook** trigger, copy the URL into `formWebhook`, and put the calendar link into `calendarUrl`. On submit the form posts: `first_name, last_name, phone, email, service, location, contact_method, message, consent, marketing, marketing_consent, source, page_url`. Then it redirects to the calendar with name/email/phone pre-filled. In the workflow: Create/Update Contact → add tag from `service` → create the opportunity in the single pipeline → notify the coordinator.
 
 If neither is set, the form validates and shows a "please call/text us" message, so nothing is lost while you finish GHL. The "Already know what you want? Open the Calendar" box on book.html stays hidden until `calendarUrl` is set. No calendar iframes are embedded anywhere.
+
+## v5 changes
+- **Spanish site** in `es/` — every page fully translated (text, buttons, form, alt text, page titles, reels, error messages). An **EN | ES** switch sits in the header (desktop + mobile) and in the mobile menu; it keeps the visitor on the same page. Visitors whose browser is set to Spanish see a small "¿Prefiere español?" suggestion (never forced).
+- Upload the `es` folder together with the rest — links like `yoursite.com/es/face.html` work automatically.
+- Form submissions include `language` = English / Spanish so the team can follow up in Spanish.
+- **À la carte section** ("Prefer a single treatment?") under the packages on Home, Face, Body, Skin and Wellness: Botox®/neurotoxin, fillers, PDO threads, PRP/PEP, IV therapy, vitamin shots, facials, lash & brow, hormone pellets, peptides — each with **Book This** (pre-selects the service in the form) and **See Price** (opens the right tab on the Menu page and highlights it).
+- **Services** menu item (dropdown: À la carte treatments · Full service menu & prices).
+- Booking form step 1 now has "Signature transformations" cards + "À la carte treatments" options.
+- Note: the GHL chat widget shows in whatever language it is set to inside GHL.
+- If you edit text in an English page, make the same edit in the matching `es/` page (or ask Claude to rebuild both).
 
 ## v4 changes
 - Original logo colors (`assets/img/brand/logo-original*.png`) on an ivory header; palette built from the logo: teal #5fa5b1 + sun sand #e4cbb7 over deep teal #0f3a40.
