@@ -1139,3 +1139,42 @@ a.info-card { display: block; transition: transform .5s var(--ease), box-shadow 
 /* Spanish labels are longer — tighten the desktop nav */
 @media (min-width: 1140px) and (max-width: 1599px) { html[lang="es"] .nav__list { gap: clamp(.6rem, -.4rem + 1.1vw, 1.2rem); } html[lang="es"] .nav__link { letter-spacing: .12em; font-size: .67rem; } html[lang="es"] .header-social a:nth-child(3) { display: none; } html[lang="es"] .header-cta { padding-inline: 1.1rem; } }
 @media (min-width: 1140px) and (max-width: 1279px) { .header-social { display: none; } }
+
+/* Header fit: the logo never shrinks; the phone number only shows on very wide screens */
+.brand { flex-shrink: 0; display: block; }
+.brand img { width: auto; max-width: none; height: 50px; aspect-ratio: 720 / 236; }
+.site-header.is-solid .brand img { height: 44px; }
+.nav { min-width: 0; }
+.header-actions { flex-shrink: 0; }
+.header-phone, .header-phone[style] { display: none !important; }
+@media (min-width: 1800px) { .header-phone { display: inline-block !important; white-space: nowrap; } }
+@media (min-width: 1600px) { html[lang="es"] .nav__list { gap: 1.3rem; } }
+/* Smaller, refined header CTA */
+.header-cta { min-height: 40px !important; padding: .5rem 1.15rem !important; font-size: .62rem !important; letter-spacing: .18em !important; white-space: nowrap; }
+.site-header.is-solid .header-cta { min-height: 38px !important; }
+
+/* ---------- Adaptive header (JS measures real fit; works with any font / zoom / language) ---------- */
+.header-phone, .header-phone[style] { display: none !important; }
+.site-header .container { flex-wrap: nowrap; }
+.nav { flex: 1 1 auto; min-width: 0; display: none; justify-content: center; }
+@media (min-width: 1140px) { .nav { display: flex; } }
+.nav__list { flex-wrap: nowrap; white-space: nowrap; }
+.header-actions { flex: 0 0 auto; gap: .7rem; }
+.header-social { padding-left: .7rem; margin-left: 0; }
+/* step 1: compact — drop social icons, tighten spacing */
+.site-header.h-compact .header-social:not(.header-social--mobile) { display: none !important; }
+.site-header.h-compact .nav__list { gap: .95rem; }
+.site-header.h-compact .nav__link { letter-spacing: .13em; font-size: .66rem; }
+/* step 2: collapsed — switch to the menu button like on tablets */
+.site-header.h-collapsed .nav { display: none !important; }
+.site-header.h-collapsed .menu-toggle { display: grid !important; }
+.site-header.h-collapsed .header-social--mobile { display: flex !important; }
+.site-header.h-collapsed .header-cta { display: inline-flex; }
+/* before JS measures, hide the nav for a frame to avoid a visible overlap */
+.site-header:not(.h-measured) .nav__list { visibility: hidden; }
+/* fixed menu spacing (was growing with screen width while the header width is capped) */
+@media (min-width: 1140px) { .nav__list, html[lang="es"] .nav__list { gap: 1.35rem; } }
+@media (min-width: 1140px) { .site-header.h-compact .nav__list { gap: .9rem; } }
+/* the header may use more of the screen than page content, so everything fits on one line */
+.site-header .container { width: min(100% - 2 * clamp(1.25rem, .5rem + 2vw, 2.5rem), 1560px); }
+@media (min-width: 1140px) { .nav__list, html[lang="es"] .nav__list { gap: 1.2rem; } }
