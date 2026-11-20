@@ -69,6 +69,76 @@ const LIBRE_CONFIG = {
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const saveData = navigator.connection && navigator.connection.saveData;
 
+  /* ---------- Language (EN / ES) ---------- */
+  const LANG = (document.documentElement.lang || "en").slice(0, 2) === "es" ? "es" : "en";
+  const ROOT = LANG === "es" ? "../" : "";
+  const ES = {
+    "Now playing": "Reproduciendo",
+    "Turn sound on": "Activar sonido", "Turn sound off": "Silenciar",
+    "More reels on Facebook": "Más videos en Facebook",
+    "Treatments, results and tips from Dr. Thomas — new every week.": "Tratamientos, resultados y consejos de la Dra. Thomas — nuevos cada semana.",
+    "Click to view more": "Haga clic para ver más",
+    "Show reel ": "Ver video ",
+    "Please choose a service to continue.": "Por favor elija un servicio para continuar.",
+    "Please enter your first name.": "Por favor escriba su nombre.",
+    "Please enter your last name.": "Por favor escriba su apellido.",
+    "Please enter a valid phone number.": "Por favor escriba un número de teléfono válido.",
+    "Please enter a valid email.": "Por favor escriba un correo electrónico válido.",
+    "Please complete the highlighted fields.": "Por favor complete los campos señalados.",
+    "Sending…": "Enviando…",
+    "Our online form is being connected. Please call or text ": "Nuestro formulario en línea se está conectando. Por favor llame o escriba al ",
+    " and our team will book you right away.": " y nuestro equipo le dará una cita de inmediato.",
+    "Something went wrong. Please call or text ": "Algo salió mal. Por favor llame o escriba al ",
+    "Prefer Spanish?": "¿Prefiere inglés?",
+    // reel tags & titles
+    "Endolift® · Face": "Endolift® · Rostro", "Endolift® is customizable": "Endolift® se adapta a usted",
+    "Endolift® · Real result": "Endolift® · Resultado real", "Before meets after": "El antes y el después",
+    "Dr. Thomas · Philosophy": "Dra. Thomas · Filosofía", "My approach: less is more": "Mi enfoque: menos es más",
+    "Body · Patient moment": "Cuerpo · Momento del paciente", "The best feeling": "La mejor sensación",
+    "Laser & Skin": "Láser y piel", "Lightscan eyes — tighten & brighten": "Lightscan para ojos — reafirma e ilumina",
+    "Client feedback": "Opinión de clienta", "“Big difference — I love it!”": "“¡Gran diferencia — me encanta!”",
+    "Dr. Thomas explains": "La Dra. Thomas explica", "How Endolift® works": "Cómo funciona Endolift®",
+    "Endolift® · Abdomen": "Endolift® · Abdomen", "Before & after Endolift®": "Antes y después de Endolift®",
+    "Signs of hormonal imbalance": "Señales de desequilibrio hormonal",
+    "Facial artistry": "Arte facial", "Endolift® + Radiesse® balancing": "Armonización con Endolift® + Radiesse®",
+    "Dr. Thomas · Wellness": "Dra. Thomas · Bienestar", "Nutrition is the basis of everything": "La nutrición es la base de todo",
+    "Why Lightscan laser?": "¿Por qué el láser Lightscan?",
+    "Client testimonial": "Testimonio de clienta", "Why I chose Dr. Thomas": "Por qué elegí a la Dra. Thomas",
+    "Dr. Thomas · Longevity": "Dra. Thomas · Longevidad", "Why we age — and how to age well": "Por qué envejecemos — y cómo envejecer bien",
+    "Lifestyle medicine": "Medicina del estilo de vida", "A patient’s wellness journey": "El camino de bienestar de una paciente",
+    "Dr. Thomas · Hormones": "Dra. Thomas · Hormonas", "Hormones, exercise & your body": "Hormonas, ejercicio y su cuerpo",
+    "Endolift® · Body Q&A": "Endolift® · Preguntas sobre el cuerpo", "What is Endolift®?": "¿Qué es Endolift®?",
+    "Dr. Thomas · Lifestyle": "Dra. Thomas · Estilo de vida", "How to keep your results": "Cómo mantener sus resultados",
+    "Body · Fibrosis care": "Cuerpo · Tratamiento de fibrosis", "Treating post-lipo fibrosis": "Tratamiento de la fibrosis post-lipo"
+  };
+  const t = (str) => (LANG === "es" && ES[str]) || str;
+  const withRoot = (u) => (u && !/^(https?:)?\/\//.test(u) && !u.startsWith("/") ? ROOT + u : u);
+
+  // EN | ES switch: keep the same page (and section) in the other language
+  (() => {
+    const file = (location.pathname.split("/").pop() || "index.html").replace(/^$/, "index.html");
+    const enHref = (LANG === "es" ? "../" : "") + file + location.search + location.hash;
+    const esHref = (LANG === "es" ? "" : "es/") + file + location.search + location.hash;
+    $$(".lang-switch a").forEach((a) => {
+      const isEs = a.dataset.lang === "es";
+      a.href = isEs ? esHref : enHref;
+      if ((isEs && LANG === "es") || (!isEs && LANG === "en")) a.setAttribute("aria-current", "true");
+      a.addEventListener("click", () => { try { localStorage.setItem("libre-lang", a.dataset.lang); } catch (e) {} });
+    });
+    // gentle suggestion for Spanish-speaking browsers (never forced)
+    let pref = null; try { pref = localStorage.getItem("libre-lang"); } catch (e) {}
+    const browserEs = (navigator.languages || [navigator.language || ""]).some((l) => /^es\b/i.test(l));
+    if (LANG === "en" && browserEs && !pref) {
+      const tip = document.createElement("div");
+      tip.className = "lang-tip"; tip.setAttribute("lang", "es");
+      tip.innerHTML = `<span>¿Prefiere español?</span><a class="btn btn--sm" href="${esHref}">Ver en español</a><button type="button" aria-label="Cerrar">×</button>`;
+      document.body.appendChild(tip);
+      requestAnimationFrame(() => setTimeout(() => tip.classList.add("show"), 2600));
+      $("button", tip).addEventListener("click", () => { tip.remove(); try { localStorage.setItem("libre-lang", "en"); } catch (e) {} });
+      $("a", tip).addEventListener("click", () => { try { localStorage.setItem("libre-lang", "es"); } catch (e) {} });
+    }
+  })();
+
   /* ---------- Loading: coastal preloader (first visit) + page curtain ---------- */
   const pre = $(".preloader");
   const curtain = $(".curtain");
@@ -168,7 +238,7 @@ const LIBRE_CONFIG = {
 
   /* ---------- Consistent motion: auto-reveal cards (staggered) ---------- */
   if (!reduceMotion) {
-    const cardSel = ".feature-card, .tier, .pillar6, .team-card, .result-card, .menu-block, .info-card, .location-card, .addon, .timeline li, .accordion__item, .trust-bar__item, .financing, .shop-band, .price-table, .frame, .notice";
+    const cardSel = ".alc-card, .feature-card, .tier, .pillar6, .team-card, .result-card, .menu-block, .info-card, .location-card, .addon, .timeline li, .accordion__item, .trust-bar__item, .financing, .shop-band, .price-table, .frame, .notice";
     const groups = new Map();
     $$(cardSel).forEach((el) => {
       if (el.closest(".reveal, .reveal-img, .tabs__panel[hidden], .form-card, .modal, .lightbox")) return;
@@ -297,9 +367,15 @@ const LIBRE_CONFIG = {
         if (e.key === "ArrowLeft") { const n = (i - 1 + btns.length) % btns.length; activate(n); btns[n].focus(); }
       });
     });
-    const idx = panels.findIndex((p) => p.id === location.hash.replace("#", ""));
+    const hash = decodeURIComponent(location.hash.replace("#", ""));
+    const target = hash ? document.getElementById(hash) : null;
+    let idx = panels.findIndex((p) => p.id === hash || (target && p.contains(target)));
     activate(idx >= 0 ? idx : 0);
-    if (idx >= 0) setTimeout(() => wrap.scrollIntoView({ behavior: "smooth" }), 400);
+    if (idx >= 0) setTimeout(() => {
+      const el = target && !panels.includes(target) ? target : wrap;
+      window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 110, behavior: reduceMotion ? "auto" : "smooth" });
+      if (target && target.classList.contains("menu-block")) { target.classList.add("is-flash"); setTimeout(() => target.classList.remove("is-flash"), 2200); }
+    }, 500);
   });
 
   /* ---------- Accordion ---------- */
@@ -389,6 +465,7 @@ const LIBRE_CONFIG = {
     const chosen = $("[data-chosen]", form);
     const svcErr = $("[data-service-error]", form);
     const selected = () => radios.find((r) => r.checked);
+    const labelOf = (r) => { const st = r.closest("label").querySelector("strong"); return st ? st.textContent : r.value; };
     const goStep = (n, move = true) => {
       panels.forEach((p) => { const on = +p.dataset.step === n; p.hidden = !on; p.classList.toggle("is-active", on); });
       inds.forEach((li) => { const k = +li.dataset.stepInd; li.classList.toggle("is-active", k === n); li.classList.toggle("is-done", k < n); });
@@ -399,8 +476,8 @@ const LIBRE_CONFIG = {
     };
     const toStep2 = () => {
       const r = selected();
-      if (!r) { svcErr.textContent = "Please choose a service to continue."; return; }
-      svcErr.textContent = ""; chosen.textContent = r.value; goStep(2);
+      if (!r) { svcErr.textContent = t("Please choose a service to continue."); return; }
+      svcErr.textContent = ""; chosen.textContent = labelOf(r); goStep(2);
     };
     let pointerAt = 0;
     radios.forEach((r) => {
@@ -411,7 +488,7 @@ const LIBRE_CONFIG = {
     $$("[data-back]", form).forEach((b) => b.addEventListener("click", () => goStep(1)));
 
     const preKey = new URLSearchParams(location.search).get("service");
-    if (preKey) { const r = radios.find((x) => x.dataset.key === preKey || x.value === preKey); if (r) { r.checked = true; chosen.textContent = r.value; goStep(2, false); } }
+    if (preKey) { const r = radios.find((x) => x.dataset.key === preKey || x.value === preKey); if (r) { r.checked = true; chosen.textContent = labelOf(r); goStep(2, false); } }
 
     // Option A: replace with the native GHL form if an ID is set
     if (LIBRE_CONFIG.ghlFormId) {
@@ -432,12 +509,12 @@ const LIBRE_CONFIG = {
     };
     const validate = () => {
       let ok = true;
-      [["first_name", "Please enter your first name."], ["last_name", "Please enter your last name."]].forEach(([n, m]) => {
+      [["first_name", t("Please enter your first name.")], ["last_name", t("Please enter your last name.")]].forEach(([n, m]) => {
         const f = form[n]; const bad = !f.value.trim(); setErr(f, bad ? m : ""); if (bad) ok = false;
       });
       const phone = form.phone.value.replace(/\D/g, "");
-      if (phone.length < 10) { setErr(form.phone, "Please enter a valid phone number."); ok = false; } else setErr(form.phone, "");
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) { setErr(form.email, "Please enter a valid email."); ok = false; } else setErr(form.email, "");
+      if (phone.length < 10) { setErr(form.phone, t("Please enter a valid phone number.")); ok = false; } else setErr(form.phone, "");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.value.trim())) { setErr(form.email, t("Please enter a valid email.")); ok = false; } else setErr(form.email, "");
       form.consent.closest(".choice").classList.toggle("has-error", !form.consent.checked);
       if (!form.consent.checked) ok = false;
       return ok;
@@ -448,8 +525,8 @@ const LIBRE_CONFIG = {
       e.preventDefault();
       status.classList.remove("is-error");
       if (form.website.value) return; // honeypot
-      if (!selected()) { goStep(1); svcErr.textContent = "Please choose a service to continue."; return; }
-      if (!validate()) { status.textContent = "Please complete the highlighted fields."; status.classList.add("is-error"); const bad = $(".has-error input", form); if (bad) bad.focus(); return; }
+      if (!selected()) { goStep(1); svcErr.textContent = t("Please choose a service to continue."); return; }
+      if (!validate()) { status.textContent = t("Please complete the highlighted fields."); status.classList.add("is-error"); const bad = $(".has-error input", form); if (bad) bad.focus(); return; }
       const data = Object.fromEntries(new FormData(form).entries());
       delete data.website;
       data.service = selected().value;
@@ -457,8 +534,9 @@ const LIBRE_CONFIG = {
       data.marketing_consent = form.marketing.checked ? "yes" : "no";
       data.source = "Website — " + document.title;
       data.page_url = location.href;
+      data.language = LANG === "es" ? "Spanish" : "English";
       const btn = $("button[type=submit]", form);
-      btn.disabled = true; btn.dataset.label = btn.innerHTML; btn.textContent = "Sending…";
+      btn.disabled = true; btn.dataset.label = btn.innerHTML; btn.textContent = t("Sending…");
       try {
         if (!LIBRE_CONFIG.formWebhook) throw new Error("not-connected");
         await fetch(LIBRE_CONFIG.formWebhook, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(data).toString() });
@@ -471,8 +549,8 @@ const LIBRE_CONFIG = {
         }
       } catch (err) {
         status.innerHTML = err.message === "not-connected"
-          ? "Our online form is being connected. Please call or text <a href='tel:" + LIBRE_CONFIG.phone + "'>(877) 536-7616</a> and our team will book you right away."
-          : "Something went wrong. Please call or text <a href='tel:" + LIBRE_CONFIG.phone + "'>(877) 536-7616</a>.";
+          ? t("Our online form is being connected. Please call or text ") + "<a href='tel:" + LIBRE_CONFIG.phone + "'>(877) 536-7616</a>" + t(" and our team will book you right away.")
+          : t("Something went wrong. Please call or text ") + "<a href='tel:" + LIBRE_CONFIG.phone + "'>(877) 536-7616</a>.";
         status.classList.add("is-error");
       } finally { btn.disabled = false; btn.innerHTML = btn.dataset.label; }
     });
@@ -483,8 +561,9 @@ const LIBRE_CONFIG = {
     const C = LIBRE_CONFIG;
     const all = (C.reels || []).map((r) => ({
       ...r,
-      video: r.video || (r.id ? C.reelsVideoPath + r.id + ".mp4" : ""),
-      poster: r.poster || (r.id ? C.reelsPosterPath + r.id + ".webp" : "")
+      tag: t(r.tag), title: t(r.title),
+      video: withRoot(r.video || (r.id ? C.reelsVideoPath + r.id + ".mp4" : "")),
+      poster: withRoot(r.poster || (r.id ? C.reelsPosterPath + r.id + ".webp" : ""))
     })).filter((r) => r.video || r.poster);
     const cat = root.dataset.reels || "all";
     let list = cat === "all" ? all : all.filter((r) => (r.cats || []).includes(cat));
@@ -500,25 +579,25 @@ const LIBRE_CONFIG = {
           ${r.video ? `<video muted playsinline preload="none" data-src="${esc(r.video)}"></video>` : ""}
         </div>
         <span class="reel__num">${String(i + 1).padStart(2, "0")}</span>
-        ${r.video ? `<span class="reel__live"><i></i>Now playing</span>
+        ${r.video ? `<span class="reel__live"><i></i>${t("Now playing")}</span>
         <span class="reel__play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg></span>
-        <button class="reel__sound" type="button" aria-label="Turn sound on" hidden>
+        <button class="reel__sound" type="button" aria-label="${t("Turn sound on")}" hidden>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="on" d="M17 9a4 4 0 0 1 0 6M19.5 6.5a7.5 7.5 0 0 1 0 11"/><path class="off" d="M17 9l5 6M22 9l-5 6"/></svg>
         </button>` : ""}
         <div class="reel__cap"><span>${esc(r.tag)}</span><h3>${esc(r.title)}</h3></div>
         <div class="reel__bar"><i></i></div>
       </article>`).join("") + `
-      <article class="reel reel--more" data-i="${list.length}" aria-label="View more reels on Facebook">
+      <article class="reel reel--more" data-i="${list.length}" aria-label="${t("More reels on Facebook")}">
         <div class="reel__more-in">
           <span class="fb">${fbIcon}</span>
-          <h3>More reels on Facebook</h3>
-          <p>Treatments, results and tips from Dr. Thomas — new every week.</p>
-          <a class="btn btn--sm" href="${esc(C.reelsMoreUrl)}" target="_blank" rel="noopener">Click to view more</a>
+          <h3>${t("More reels on Facebook")}</h3>
+          <p>${t("Treatments, results and tips from Dr. Thomas — new every week.")}</p>
+          <a class="btn btn--sm" href="${esc(C.reelsMoreUrl)}" target="_blank" rel="noopener">${t("Click to view more")}</a>
         </div>
       </article>`;
     stage.innerHTML = slidesHtml;
     const slides = $$(".reel", stage);
-    dots.innerHTML = slides.map((el, i) => `<button type="button" aria-label="${i < list.length ? "Show reel " + (i + 1) : "More reels on Facebook"}"></button>`).join("");
+    dots.innerHTML = slides.map((el, i) => `<button type="button" aria-label="${i < list.length ? t("Show reel ") + (i + 1) : t("More reels on Facebook")}"></button>`).join("");
     const dotBtns = $$("button", dots);
     $$(".reel__media img", stage).forEach((im) => {
       const done = () => im.parentElement.classList.remove("is-loading");
@@ -589,7 +668,7 @@ const LIBRE_CONFIG = {
       const b = e.target.closest(".reel__sound"); if (!b) return;
       const el = b.closest(".reel"), v = $("video", el);
       v.muted = !v.muted; el.classList.toggle("is-sound", !v.muted);
-      b.setAttribute("aria-label", v.muted ? "Turn sound on" : "Turn sound off");
+      b.setAttribute("aria-label", v.muted ? t("Turn sound on") : t("Turn sound off"));
       if (!v.muted) { clearTimeout(timer); if (v.paused) { v.play().catch(() => {}); el.classList.remove("is-paused"); } } else arm(MAX_MS);
     });
     dotBtns.forEach((d, i) => d.addEventListener("click", () => go(i)));
