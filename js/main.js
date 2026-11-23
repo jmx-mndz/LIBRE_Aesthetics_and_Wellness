@@ -28,26 +28,26 @@ const LIBRE_CONFIG = {
   /* ---- REELS (3D auto-playing carousel) ----------------------------------
      Videos live in assets/video/reels/<id>.mp4 and posters in assets/img/reels/<id>.webp.
      To host a reel on GHL instead, paste its Media Storage link into "video".
-     "cats" decides which pages show it: face, body, skin, wellness, doctor
+     "cats" decides which pages show it: endolift, face, body, skin, wellness, doctor
      (every reel also shows on the Home and Results pages).                  */
   reels: [
-    { id: "endolift-customizable", tag: "Endolift® · Face", title: "Endolift® is customizable", cats: ["face"] },
-    { id: "before-meets-after", tag: "Endolift® · Real result", title: "Before meets after", cats: ["face", "results"] },
+    { id: "endolift-customizable", tag: "Endolift® · Face", title: "Endolift® is customizable", cats: ["endolift", "face"] },
+    { id: "before-meets-after", tag: "Endolift® · Real result", title: "Before meets after", cats: ["endolift", "face", "results"] },
     { id: "dr-thomas-approach", tag: "Dr. Thomas · Philosophy", title: "My approach: less is more", cats: ["doctor", "face"] },
     { id: "best-feeling", tag: "Body · Patient moment", title: "The best feeling", cats: ["body", "results"] },
     { id: "lightscan-eyes", tag: "Laser & Skin", title: "Lightscan eyes — tighten & brighten", cats: ["skin", "face"] },
-    { id: "endolift-testimony", tag: "Client feedback", title: "“Big difference — I love it!”", cats: ["face", "results"] },
-    { id: "dr-thomas-endolift-laser", tag: "Dr. Thomas explains", title: "How Endolift® works", cats: ["doctor", "face", "body"] },
-    { id: "endolift-abdomen", tag: "Endolift® · Abdomen", title: "Before & after Endolift®", cats: ["body", "results"] },
+    { id: "endolift-testimony", tag: "Client feedback", title: "“Big difference — I love it!”", cats: ["endolift", "face", "results"] },
+    { id: "dr-thomas-endolift-laser", tag: "Dr. Thomas explains", title: "How Endolift® works", cats: ["endolift", "doctor", "face", "body"] },
+    { id: "endolift-abdomen", tag: "Endolift® · Abdomen", title: "Before & after Endolift®", cats: ["endolift", "body", "results"] },
     { id: "hormonal-balance", tag: "Dr. Thomas explains", title: "Signs of hormonal imbalance", cats: ["wellness", "doctor"] },
-    { id: "endolift-radiesse", tag: "Facial artistry", title: "Endolift® + Radiesse® balancing", cats: ["face"] },
+    { id: "endolift-radiesse", tag: "Facial artistry", title: "Endolift® + Radiesse® balancing", cats: ["endolift", "face"] },
     { id: "dr-thomas-nutrition", tag: "Dr. Thomas · Wellness", title: "Nutrition is the basis of everything", cats: ["doctor", "wellness"] },
     { id: "lightscan-laser", tag: "Laser & Skin", title: "Why Lightscan laser?", cats: ["skin"] },
     { id: "client-testimonial", tag: "Client testimonial", title: "Why I chose Dr. Thomas", cats: ["body", "wellness", "results"] },
     { id: "dr-thomas-aging", tag: "Dr. Thomas · Longevity", title: "Why we age — and how to age well", cats: ["doctor", "wellness"] },
     { id: "lifestyle-consultation", tag: "Lifestyle medicine", title: "A patient’s wellness journey", cats: ["wellness", "results"] },
     { id: "dr-thomas-hormones-exercise", tag: "Dr. Thomas · Hormones", title: "Hormones, exercise & your body", cats: ["doctor", "wellness"] },
-    { id: "endolift-body-qa", tag: "Endolift® · Body Q&A", title: "What is Endolift®?", cats: ["body"] },
+    { id: "endolift-body-qa", tag: "Endolift® · Body Q&A", title: "What is Endolift®?", cats: ["endolift", "body"] },
     { id: "dr-thomas-lasting-results", tag: "Dr. Thomas · Lifestyle", title: "How to keep your results", cats: ["doctor", "wellness"] },
     { id: "post-lipo-fibrosis", tag: "Body · Fibrosis care", title: "Treating post-lipo fibrosis", cats: ["body"] }
   ],
@@ -223,8 +223,10 @@ const LIBRE_CONFIG = {
   const toTop = $(".back-to-top");
   const progress = $(".progress span");
   let lastY = window.scrollY;
+  const topbar = $(".topbar");
   const onScroll = () => {
     const y = window.scrollY;
+    if (header && topbar) header.style.top = Math.max(0, topbar.offsetHeight - y) + "px";
     if (header) {
       header.classList.toggle("is-solid", y > 30);
       const menuOpen = document.body.classList.contains("menu-open");
@@ -374,6 +376,45 @@ const LIBRE_CONFIG = {
         if (e.isIntersecting) { if (!v.src) load(); else v.play().catch(() => {}); } else if (v.src) v.pause();
       }), { threshold: 0.1 }).observe(v);
     } else load();
+  });
+
+  /* ---------- Count-up numbers ([data-count]) ---------- */
+  const counters = $$("[data-count]");
+  if (counters.length && "IntersectionObserver" in window && !reduceMotion) {
+    const cio = new IntersectionObserver((entries) => entries.forEach((en) => {
+      if (!en.isIntersecting) return;
+      const el = en.target, end = parseFloat(el.dataset.count) || 0, t0 = performance.now(), dur = 1400 + Math.min(end, 1500) * 0.4;
+      const step = (now) => {
+        const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 3);
+        el.textContent = Math.round(end * e);
+        if (k < 1) requestAnimationFrame(step);
+      };
+      el.textContent = "0"; requestAnimationFrame(step); cio.unobserve(el);
+    }), { threshold: 0.6 });
+    counters.forEach((c) => cio.observe(c));
+  }
+
+  /* ---------- Scroll-scrubbed explainer ([data-scrub]) ---------- */
+  $$("[data-scrub]").forEach((sec) => {
+    const steps = $$(".scrub-steps li", sec);
+    const clamp = (v) => Math.max(0, Math.min(1, v));
+    if (reduceMotion) { sec.classList.add("is-static"); sec.style.setProperty("--a", 1); sec.style.setProperty("--b", 1); sec.style.setProperty("--c", 1); steps.forEach((s) => s.classList.add("is-active")); return; }
+    let ticking = false;
+    const update = () => {
+      ticking = false;
+      const r = sec.getBoundingClientRect(), total = r.height - window.innerHeight;
+      const p = total > 0 ? clamp(-r.top / total) : 1;
+      const a = clamp(p / 0.3), b = clamp((p - 0.3) / 0.3), c = clamp((p - 0.6) / 0.32);
+      sec.style.setProperty("--p", p.toFixed(3));
+      sec.style.setProperty("--a", a.toFixed(3));
+      sec.style.setProperty("--b", b.toFixed(3));
+      sec.style.setProperty("--c", c.toFixed(3));
+      const idx = p < 0.3 ? 0 : p < 0.6 ? 1 : 2;
+      steps.forEach((s, i) => { s.classList.toggle("is-active", i === idx); s.classList.toggle("is-done", i < idx); });
+    };
+    window.addEventListener("scroll", () => { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    window.addEventListener("resize", update);
+    update();
   });
 
   /* ---------- Tabs ---------- */
