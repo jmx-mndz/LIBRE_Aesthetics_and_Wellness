@@ -1562,3 +1562,36 @@ html[lang="es"] .path-card--feature::after { content: "Médico"; }
 .collage .frame.frame--team { grid-column: 1 / -1; grid-row: auto; }
 .collage:has(.frame--team) .frame:first-child { grid-row: auto; aspect-ratio: 4 / 3.4; min-height: 0; }
 .collage .frame.frame--team { order: -1; }
+
+/* ---------- Financial & Payment Policy ---------- */
+.policy-tags { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem 1.4rem; margin-bottom: 2rem; font-size: .7rem; letter-spacing: .24em; text-transform: uppercase; color: var(--teal-700); }
+.policy-tags span { display: inline-flex; align-items: center; gap: 1.4rem; }
+.policy-tags span + span::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--gold); margin-left: -.7rem; }
+.policy-list { display: grid; gap: 1rem; }
+.policy-card { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1.4rem; align-items: start; padding: clamp(1.3rem, 1rem + 1vw, 1.9rem); border-radius: var(--radius-lg); background: #fff; border: 1px solid var(--line); box-shadow: var(--shadow-sm); }
+.policy-card__icon { display: grid; place-items: center; width: 58px; height: 58px; border-radius: 50%; background: linear-gradient(150deg, var(--teal-600), var(--teal-800)); color: #fff; box-shadow: 0 0 0 3px #fff, 0 0 0 4px rgba(176,136,104,.55); flex: none; }
+.policy-card__icon svg { width: 24px; height: 24px; }
+.policy-card h2, .policy-refund h2 { font-size: clamp(1.35rem, 1.15rem + .6vw, 1.7rem); margin: .1rem 0 .4rem; }
+.policy-card p { margin: 0 0 .5rem; color: var(--text); }
+.policy-card .small { color: var(--muted); font-style: italic; }
+.policy-card .btn-row { margin-top: .9rem; }
+.policy-refund { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1.4rem; align-items: center; margin-top: 1.4rem; padding: clamp(1.5rem, 1.1rem + 1.2vw, 2.2rem); border-radius: var(--radius-lg); background: linear-gradient(150deg, var(--teal-800), var(--teal-950)); color: rgba(245,239,229,.86); border: 1px solid rgba(228,203,183,.4); }
+.policy-refund h2 { color: var(--gold-300); text-transform: uppercase; letter-spacing: .06em; }
+.policy-refund p { margin: 0 0 .3rem; }
+.policy-refund strong { color: #fff; font-weight: 500; }
+.policy-refund .policy-card__icon { background: transparent; color: var(--gold-300); box-shadow: 0 0 0 2px var(--gold-300); }
+.policy-ack { margin-top: 1.4rem; padding: clamp(1.5rem, 1.1rem + 1.2vw, 2.2rem); border-radius: var(--radius-lg); background: #fff; border: 1.5px solid rgba(176,136,104,.55); text-align: center; }
+.policy-ack p { color: var(--muted); max-width: 560px; margin: .4rem auto 1.2rem; }
+.policy-sign { text-align: center; margin: 2.4rem 0 1rem; }
+.policy-sign em { display: block; font-family: var(--font-serif); font-size: clamp(1.6rem, 1.3rem + 1vw, 2.2rem); color: var(--teal-800); }
+.policy-sign span { display: block; margin-top: .4rem; font-size: .68rem; letter-spacing: .24em; text-transform: uppercase; color: var(--muted); }
+@media (max-width: 560px) {
+  .policy-card, .policy-refund { grid-template-columns: minmax(0, 1fr); gap: .9rem; }
+  .policy-card__icon { width: 50px; height: 50px; }
+}
+@media print {
+  .site-header, .topbar, .mobile-bar, .page-hero, footer, .faq, .cta-band, .policy-ack .btn-row, .to-top { display: none !important; }
+  .policy { padding: 0 !important; background: #fff !important; }
+  .policy-card, .policy-refund, .policy-ack { break-inside: avoid; box-shadow: none; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}
