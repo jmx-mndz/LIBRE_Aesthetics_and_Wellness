@@ -20,7 +20,7 @@ const LIBRE_CONFIG = {
   calendarUrl: "",
 
   // GHL chat widget (already live on the current site)
-  chatWidgetId: "697cd38c2f7d2122e2980847",
+  chatWidgetId: "6b055c14f04219e8b659de35",
 
   // NBX Wellness supplement store
   shopUrl: "https://nbxwellness.com/store/libre-aesthetics/index",
