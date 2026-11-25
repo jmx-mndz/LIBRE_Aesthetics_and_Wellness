@@ -339,11 +339,20 @@ const LIBRE_CONFIG = {
       if (!targets.has(watch)) targets.set(watch, []);
       targets.get(watch).push(el);
     });
+    // Text and cards float in from below when scrolling down, and drift down from above when scrolling up.
+    // Image curtains open once; plain .reveal blocks replay in the direction you scroll.
     const io = new IntersectionObserver((entries) => {
       entries.forEach((en) => {
-        if (!en.isIntersecting) return;
-        (targets.get(en.target) || []).forEach((el) => el.classList.add("in"));
-        io.unobserve(en.target);
+        const els = targets.get(en.target) || [];
+        if (en.isIntersecting) { els.forEach((el) => el.classList.add("in")); return; }
+        const above = en.boundingClientRect.top < 0;
+        els.forEach((el) => {
+          if (!el.classList.contains("reveal") || el.closest("form, .tabs__panel, .modal, .lightbox, .site-header")) return;
+          if (en.boundingClientRect.bottom < -40 || en.boundingClientRect.top > innerHeight + 40) {
+            el.dataset.from = above ? "top" : "bottom";
+            el.classList.remove("in");
+          }
+        });
       });
     }, { rootMargin: "0px 0px -8% 0px", threshold: 0.06 });
     targets.forEach((_, w) => io.observe(w));
@@ -356,7 +365,7 @@ const LIBRE_CONFIG = {
     const update = () => {
       const vh = window.innerHeight;
       px.forEach((el) => {
-        const r = el.parentElement.getBoundingClientRect();
+        const r = (el.closest("section") || el.parentElement).getBoundingClientRect();
         if (r.bottom < 0 || r.top > vh) return;
         const speed = parseFloat(el.dataset.parallax) || 0.08;
         const offset = (r.top + r.height / 2 - vh / 2) * -speed;
@@ -400,6 +409,76 @@ const LIBRE_CONFIG = {
       btns.forEach((b, i) => b.classList.toggle("is-on", i === cur && !v.paused));
     });
   });
+
+  /* ---------- Coastal scroll effects ---------- */
+  (() => {
+    if (reduceMotion) return;
+    const root = document.documentElement;
+    // 1. tide progress line at the top of the page
+    const bar = document.createElement("div");
+    bar.className = "tide-progress"; bar.setAttribute("aria-hidden", "true");
+    bar.innerHTML = '<span class="tide-progress__fill"></span><span class="tide-progress__crest"></span>';
+    document.body.appendChild(bar);
+    // 2. drifting shells and starfish in the deep sections
+    const ORN = {
+      shell: '<path d="M32 8c-13 0-24 10-24 24 0 8 4 14 8 18h32c4-4 8-10 8-18C56 18 45 8 32 8z"/><path d="M32 50V10M22 50l-6-34M42 50l6-34M27 50l-3-38M37 50l3-38"/>',
+      star: '<path d="M32 6l6 18h18l-14 11 5 19-15-11-15 11 5-19L8 24h18z"/>',
+      dollar: '<circle cx="32" cy="32" r="24"/><path d="M32 14v14M32 36v14M18 26l10 5M46 26l-10 5M22 46l8-8M42 46l-8-8"/>',
+      wave: '<path d="M4 36c8-10 16-10 24 0s16 10 24 0 8-6 8-6"/><path d="M4 46c8-10 16-10 24 0s16 10 24 0"/>'
+    };
+    const kinds = Object.keys(ORN);
+    $$(".bg-deep:not(.reviews-section), .coast, .escape-sec, .postcards").forEach((sec, i) => {
+      const n = innerWidth < 700 ? 1 : 2;
+      for (let k = 0; k < n; k++) {
+        const o = document.createElement("span");
+        o.className = "sea-orn"; o.setAttribute("aria-hidden", "true");
+        const kind = kinds[(i + k) % kinds.length];
+        o.innerHTML = `<svg viewBox="0 0 64 64">${ORN[kind]}</svg>`;
+        o.style.cssText = `${k ? "right" : "left"}:${4 + ((i * 7 + k * 13) % 10)}%;top:${12 + ((i * 17 + k * 29) % 60)}%;--size:${46 + ((i + k) % 3) * 18}px`;
+        o.dataset.depth = (k ? -0.12 : 0.18).toString();
+        sec.appendChild(o);
+      }
+    });
+    // 3. wave flourish under section headings (draws itself in)
+    $$(".section-head h2").forEach((h) => {
+      if (h.nextElementSibling && h.nextElementSibling.classList.contains("wave-flourish")) return;
+      const w = document.createElement("span");
+      w.className = "wave-flourish"; w.setAttribute("aria-hidden", "true");
+      w.innerHTML = '<svg viewBox="0 0 120 12"><path d="M2 6c10-8 18-8 28 0s18 8 28 0 18-8 28 0 18 8 28 0"/></svg>';
+      h.after(w);
+    });
+    // 4. depth layers: background videos drift slower than the page
+    const depthEls = [
+      ...$$(".coast__media video, .cta-band__media video, .page-hero__media video").map((el) => (el.dataset.depth = "0.12", el)),
+      ...$$(".escape video").map((el) => (el.dataset.depth = "0.08", el)),
+      ...$$(".sea-orn")
+    ];
+    const skewEls = $$(".escape-grid, .postcards__track, .alc-grid, .panels--5");
+    let lastY = scrollY, vel = 0, ticking = false;
+    const frame = () => {
+      ticking = false;
+      const y = scrollY, h = root.scrollHeight - innerHeight;
+      const p = h > 0 ? Math.min(1, y / h) : 0;
+      root.style.setProperty("--scroll-p", p.toFixed(4));
+      vel += ((y - lastY) - vel) * 0.18; lastY = y;
+      const skew = Math.max(-2.2, Math.min(2.2, vel * 0.06));
+      root.style.setProperty("--scroll-skew", skew.toFixed(3) + "deg");
+      root.classList.toggle("scrolling-up", vel < -0.5);
+      const vh = innerHeight;
+      depthEls.forEach((el) => {
+        const r = (el.closest("section") || el.parentElement).getBoundingClientRect();
+        if (r.bottom < -200 || r.top > vh + 200) return;
+        const off = (r.top + r.height / 2 - vh / 2) * parseFloat(el.dataset.depth);
+        el.style.setProperty("--depth-y", off.toFixed(1) + "px");
+      });
+      if (Math.abs(vel) > 0.2) { ticking = true; requestAnimationFrame(frame); }
+    };
+    const kick = () => { if (!ticking) { ticking = true; requestAnimationFrame(frame); } };
+    addEventListener("scroll", kick, { passive: true });
+    addEventListener("resize", kick);
+    skewEls.forEach((el) => el.classList.add("skew-on-scroll"));
+    kick();
+  })();
 
   /* ---------- Count-up numbers ([data-count]) ---------- */
   const counters = $$("[data-count]");
