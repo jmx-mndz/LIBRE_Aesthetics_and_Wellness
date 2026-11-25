@@ -83,6 +83,10 @@ const LIBRE_CONFIG = {
     "Click to view more": "Haga clic para ver más",
     "Show reel ": "Ver video ",
     "Please choose a service to continue.": "Por favor elija un servicio para continuar.",
+    "Please choose at least one service or treatment.": "Elija al menos un servicio o tratamiento.",
+    "units": "unidades", "min": "min", "Remove": "Quitar", "Ask": "Consultar", "Price at consultation": "Precio en la consulta",
+    "Fewer": "Menos", "More": "Más", "Added to your estimate": "Agregado a su estimado", "Removed from your estimate": "Quitado de su estimado",
+    "/ month": "/ mes", "Train station": "Estación de tren", "item": "artículo", "items": "artículos", "Estimate": "Estimado",
     "Please enter your first name.": "Por favor escriba su nombre.",
     "Please enter your last name.": "Por favor escriba su apellido.",
     "Please enter a valid phone number.": "Por favor escriba un número de teléfono válido.",
@@ -156,7 +160,9 @@ const LIBRE_CONFIG = {
     const overflowing = () => {
       if (!nav || getComputedStyle(nav).display === "none") return false;
       const gap = 16;
-      return list.scrollWidth > nav.clientWidth + 1 || nav.getBoundingClientRect().right > actions.getBoundingClientRect().left - gap || box.scrollWidth > box.clientWidth + 1;
+      const items = list.children, last = items[items.length - 1];
+      const used = last ? last.getBoundingClientRect().right - list.getBoundingClientRect().left : 0;
+      return used > nav.clientWidth + 1 || nav.getBoundingClientRect().right > actions.getBoundingClientRect().left - gap;
     };
     const fit = () => {
       hdr.classList.remove("h-compact", "h-collapsed");
@@ -396,6 +402,22 @@ const LIBRE_CONFIG = {
     } else load();
   });
 
+  /* ---------- Booking page: back to where the visitor came from ---------- */
+  $$("[data-back-link]").forEach((a) => {
+    try {
+      const ref = document.referrer ? new URL(document.referrer) : null;
+      if (ref && ref.origin === location.origin && !/book\.html$/.test(ref.pathname)) {
+        a.href = ref.href;
+        const name = ref.pathname.split("/").pop().replace(".html", "") || "index";
+        const map = { index: ["Back to Home", "Volver al inicio"], face: ["Back to Face", "Volver a Rostro"], body: ["Back to Body", "Volver a Cuerpo"], skin: ["Back to Skin", "Volver a Piel"], hair: ["Back to Hair", "Volver a Cabello"], wellness: ["Back to Wellness", "Volver a Bienestar"], endolift: ["Back to Endolift®", "Volver a Endolift®"], memberships: ["Back to Memberships", "Volver a Membresías"], menu: ["Back to the Menu", "Volver al menú"] };
+        const lbl = $("[data-back-label]", a);
+        if (lbl && map[name]) lbl.textContent = map[name][LANG === "es" ? 1 : 0];
+      } else {
+        a.addEventListener("click", (e) => { if (history.length > 1) { e.preventDefault(); history.back(); } });
+      }
+    } catch (e) { /* keep default link */ }
+  });
+
   /* ---------- PRP film chapters ([data-seek]) ---------- */
   $$(".prp-film").forEach((sec) => {
     const v = $("video", sec); if (!v) return;
@@ -622,34 +644,144 @@ const LIBRE_CONFIG = {
     if (lb && lb.classList.contains("open")) { if (e.key === "ArrowRight") showLb(lbIndex + 1); if (e.key === "ArrowLeft") showLb(lbIndex - 1); }
   });
 
-  /* ---------- Inquiry form: 2-step concierge (one form for every service) ---------- */
+  /* ---------- Estimate builder (Menu & Prices + booking form) ---------- */
+  const EST_KEY = "libre-estimate";
+  let memEst = {};
+  const Est = {
+    get() { try { const v = JSON.parse(localStorage.getItem(EST_KEY) || "{}"); return v && typeof v === "object" ? v : {}; } catch (e) { return { ...memEst }; } },
+    set(o) { memEst = o; try { localStorage.setItem(EST_KEY, JSON.stringify(o)); } catch (e) {} renderEst(); },
+    toggle(id, on) { const o = Est.get(); const el = itemEl(id); if (on === undefined) on = !(id in o); if (on) o[id] = o[id] || (el ? +el.dataset.qty || 1 : 1); else delete o[id]; Est.set(o); return on; },
+    qty(id, d) { const o = Est.get(); if (!(id in o)) return; const el = itemEl(id); const step = el && el.dataset.unit === "units" ? 5 : el && el.dataset.unit === "min" ? 15 : 1; o[id] = Math.max(step, (o[id] || 1) + d * step); Est.set(o); }
+  };
+  const itemEl = (id) => document.querySelector(`.menu-item[data-id="${id}"], .pick[data-id="${id}"]`);
+  const money = (n) => "$" + Math.round(n).toLocaleString("en-US");
+  const escH = (x) => String(x).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const estSummary = () => {
+    const o = Est.get(); let total = 0, monthly = 0, from = false; const lines = [];
+    Object.keys(o).forEach((id) => {
+      const el = itemEl(id); if (!el) return;
+      const name = ($(".menu-item__name", el) || el).textContent.trim();
+      const price = el.dataset.price ? +el.dataset.price : null, q = o[id], kind = el.dataset.kind, unit = el.dataset.unit || "";
+      let line = null;
+      if (price !== null && kind === "monthly") { monthly += price * q; line = price * q; }
+      else if (price !== null) { total += price * q; line = price * q; }
+      if (el.dataset.from) from = true;
+      lines.push({ id, name, q, unit, kind, line, price });
+    });
+    return { lines, total, monthly, from, count: lines.length };
+  };
+  function renderEst() {
+    const S = estSummary(), sel = Est.get();
+    $$("[data-est]").forEach((root) => {
+      const list = $("[data-est-list]", root);
+      list.innerHTML = S.lines.map((l) => {
+        const qtyCtl = (l.unit || l.kind === "once") ? `<span class="est__qty"><button type="button" data-q="-1" aria-label="${t("Fewer")}">−</button><b>${l.q}${l.unit ? " " + t(l.unit) : "×"}</b><button type="button" data-q="1" aria-label="${t("More")}">+</button></span>` : "";
+        const val = l.line === null ? `<em>${t("Ask")}</em>` : money(l.line) + (l.kind === "monthly" ? `<small> ${t("/ month")}</small>` : "");
+        return `<li data-id="${l.id}"><div class="est__item"><span>${escH(l.name)}</span>${qtyCtl}</div><strong>${val}</strong><button type="button" class="est__rm" data-rm aria-label="${t("Remove")}">×</button></li>`;
+      }).join("");
+      const has = S.count > 0;
+      $("[data-est-empty]", root).hidden = has;
+      $("[data-est-totals]", root).hidden = !has;
+      const clr = $("[data-est-clear]", root); if (clr) clr.hidden = !has;
+      $$("[data-est-total]", root).forEach((e) => (e.textContent = money(S.total) + (S.from ? "+" : "")));
+      $$("[data-est-count]", root).forEach((e) => (e.textContent = S.count));
+      const mr = $("[data-est-monthly-row]", root); if (mr) { mr.hidden = !S.monthly; $("[data-est-monthly]", root).textContent = money(S.monthly) + " " + t("/ month"); }
+      const fin = $("[data-est-fin]", root); if (fin) { fin.hidden = S.total < 300; $("[data-est-six]", root).textContent = money(S.total / 6); }
+      if (!root.classList.contains("est--inline")) { root.hidden = !has; if (!has) setSheet(root, false); }
+    });
+    $$(".menu-item[data-id]").forEach((el) => { const on = el.dataset.id in sel; el.classList.toggle("is-added", on); const b = $("[data-add]", el); if (b) b.setAttribute("aria-pressed", String(on)); });
+    $$(".pick[data-id]").forEach((el) => { const on = el.dataset.id in sel; el.classList.toggle("is-added", on); $("input", el).checked = on; });
+    document.dispatchEvent(new CustomEvent("libre:estimate", { detail: S }));
+  }
+  const setSheet = (root, open) => { root.classList.toggle("is-open", open); const tg = $("[data-est-toggle]", root); if (tg) tg.setAttribute("aria-expanded", String(open)); document.body.classList.toggle("est-open", open && !root.classList.contains("est--inline")); };
+  $$("[data-est]").forEach((root) => {
+    root.addEventListener("click", (e) => {
+      const li = e.target.closest("li[data-id]");
+      if (e.target.closest("[data-rm]") && li) { Est.toggle(li.dataset.id, false); return; }
+      const qb = e.target.closest("[data-q]"); if (qb && li) { Est.qty(li.dataset.id, +qb.dataset.q); return; }
+      if (e.target.closest("[data-est-toggle]")) setSheet(root, !root.classList.contains("is-open"));
+      if (e.target.closest("[data-est-close]")) setSheet(root, false);
+      if (e.target.closest("[data-est-clear]")) Est.set({});
+    });
+  });
+  const bump = () => $$(".est:not(.est--inline)").forEach((r) => { r.classList.remove("is-bump"); void r.offsetWidth; r.classList.add("is-bump"); });
+  $$(".menu-item[data-id] [data-add]").forEach((b) => b.addEventListener("click", () => { const on = Est.toggle(b.closest(".menu-item").dataset.id); if (on) bump(); }));
+  $$(".pick[data-id] input").forEach((c) => c.addEventListener("change", () => Est.toggle(c.closest(".pick").dataset.id, c.checked)));
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") $$(".est.is-open:not(.est--inline)").forEach((r) => setSheet(r, false)); });
+
+  /* ---------- Menu search (filters every pillar at once) ---------- */
+  const norm = (x) => x.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[®·]/g, " ");
+  $$("[data-menu-scope]").forEach((scope) => {
+    const input = $("[data-menu-search]", scope); if (!input) return;
+    const clear = $("[data-search-clear]", scope), empty = $("[data-search-empty]", scope);
+    const panels = $$(".tabs__panel", scope), btns = $$(".tabs__btn", scope);
+    const rows = $$(".menu-item, .pick", scope);
+    const run = () => {
+      const q = norm(input.value.trim());
+      clear.hidden = !q; scope.classList.toggle("is-searching", !!q);
+      if (!q) {
+        rows.forEach((r) => (r.hidden = false)); $$("[data-block]", scope).forEach((b) => (b.hidden = false)); empty.hidden = true;
+        const ai = Math.max(0, btns.findIndex((b) => b.getAttribute("aria-selected") === "true")); panels.forEach((p, i) => (p.hidden = i !== ai)); return;
+      }
+      const words = q.split(/\s+/);
+      let n = 0;
+      rows.forEach((r) => { const txt = norm(r.textContent + " " + (r.closest("[data-block]")?.querySelector("h3,.pick-group__t")?.textContent || "") + " " + (r.closest(".tabs__panel")?.dataset.pillar || "")); const toks = txt.split(/[^a-z0-9+$]+/); const ok = words.every((w) => toks.some((k) => k.startsWith(w))); r.hidden = !ok; if (ok) n++; });
+      $$("[data-block]", scope).forEach((b) => (b.hidden = !$$(".menu-item, .pick", b).some((r) => !r.hidden)));
+      panels.forEach((p) => (p.hidden = !$$(".menu-item, .pick", p).some((r) => !r.hidden)));
+      empty.hidden = n > 0;
+    };
+    input.addEventListener("input", run);
+    clear.addEventListener("click", () => { input.value = ""; run(); input.focus(); });
+    btns.forEach((b) => b.addEventListener("click", () => {
+      if (input.value) { input.value = ""; clear.hidden = true; scope.classList.remove("is-searching"); rows.forEach((r) => (r.hidden = false)); $$("[data-block]", scope).forEach((x) => (x.hidden = false)); empty.hidden = true; }
+      const tools = $("[data-menu-tools]", scope);
+      if (tools) { const top = scope.getBoundingClientRect().top + window.scrollY - 90; if (window.scrollY > top + 40) window.scrollTo({ top, behavior: reduceMotion ? "auto" : "smooth" }); }
+    }));
+  });
+  renderEst();
+
+  /* ---------- Inquiry form: choose services + estimate → details → calendar ---------- */
   const form = $("#inquiry-form");
   if (form) {
     const card = form.closest(".form-card");
     const panels = $$(".step-panel", form);
     const inds = $$("[data-step-ind]", card);
-    const radios = $$('input[name="service"]', form);
-    const chosen = $("[data-chosen]", form);
+    const checks = $$('input[name="services"]', form);
+    const chosen = $("[data-chosen]", form), chosenEst = $("[data-chosen-est]", form);
     const svcErr = $("[data-service-error]", form);
-    const selected = () => radios.find((r) => r.checked);
-    const labelOf = (r) => { const st = r.closest("label").querySelector("strong"); return st ? st.textContent : r.value; };
+    const picker = $("[data-picker]", form);
+    const transportBox = $('[data-transport] input', form);
+    const selected = () => checks.filter((c) => c.checked);
+    const labelOf = (c) => { const st = c.closest("label").querySelector("strong"); return (st ? st.textContent : c.closest("label").textContent).trim(); };
     const goStep = (n, move = true) => {
       panels.forEach((p) => { const on = +p.dataset.step === n; p.hidden = !on; p.classList.toggle("is-active", on); });
       inds.forEach((li) => { const k = +li.dataset.stepInd; li.classList.toggle("is-active", k === n); li.classList.toggle("is-done", k < n); });
       if (!move) return;
       const top = card.getBoundingClientRect().top;
       if (top < 0 || top > window.innerHeight * 0.5) window.scrollTo({ top: window.scrollY + top - 110, behavior: reduceMotion ? "auto" : "smooth" });
-      setTimeout(() => { const f = n === 2 ? form.first_name : (selected() || radios[0]); if (f) f.focus({ preventScroll: true }); }, 420);
+      setTimeout(() => { const f = n === 2 ? form.first_name : checks[0]; if (f) f.focus({ preventScroll: true }); }, 420);
+    };
+    const syncChosen = () => {
+      const S = estSummary();
+      const labels = selected().map(labelOf);
+      chosen.textContent = labels.length ? labels.join(" · ") : (S.count ? S.lines.map((l) => l.name).join(" · ") : "—");
+      if (chosenEst) { chosenEst.hidden = !S.count; chosenEst.textContent = t("Estimate") + " " + money(S.total) + (S.from ? "+" : ""); }
     };
     const toStep2 = () => {
-      const r = selected();
-      if (!r) { svcErr.textContent = t("Please choose a service to continue."); return; }
-      svcErr.textContent = ""; chosen.textContent = labelOf(r); goStep(2);
+      if (!selected().length && !estSummary().count) { svcErr.textContent = t("Please choose at least one service or treatment."); return; }
+      svcErr.textContent = ""; syncChosen(); goStep(2);
     };
-    let pointerAt = 0;
-    radios.forEach((r) => {
-      r.closest("label").addEventListener("pointerdown", () => (pointerAt = Date.now()));
-      r.addEventListener("change", () => { svcErr.textContent = ""; if (Date.now() - pointerAt < 800) setTimeout(toStep2, reduceMotion ? 0 : 420); });
+    checks.forEach((c) => c.addEventListener("change", () => {
+      svcErr.textContent = "";
+      if (c.dataset.key === "transport" && transportBox) { transportBox.checked = c.checked; transportBox.closest("[data-transport]").classList.toggle("is-flag", c.checked); }
+      if (c.dataset.key === "not-sure" && c.checked) checks.forEach((x) => { if (x !== c && x.dataset.key !== "transport") x.checked = false; });
+      else if (c.checked) { const ns = checks.find((x) => x.dataset.key === "not-sure"); if (ns) ns.checked = false; }
+    }));
+    if (transportBox) transportBox.addEventListener("change", () => { const tc = checks.find((x) => x.dataset.key === "transport"); if (tc) tc.checked = transportBox.checked; });
+    // picking exact treatments ticks the matching pillar card
+    document.addEventListener("libre:estimate", (e) => {
+      e.detail.lines.forEach((l) => { const key = l.id.split("-")[0]; const c = checks.find((x) => x.dataset.key === key); if (c && !c.dataset.auto) { c.checked = true; c.dataset.auto = "1"; } });
+      syncChosen();
     });
     const next = $("[data-next]", form); if (next) next.addEventListener("click", toStep2);
     $$("[data-back]", form).forEach((b) => b.addEventListener("click", () => goStep(1)));
@@ -663,13 +795,19 @@ const LIBRE_CONFIG = {
         : i === 1 ? t("Meet in person, by phone or virtually. No cost.")
         : t("The $75 fee is applied to your treatment.");
     };
+    const qs = new URLSearchParams(location.search);
     if (consultSel) {
-      const c = new URLSearchParams(location.search).get("consult");
+      const c = qs.get("consult");
       if (c && c in CONSULT_MAP) consultSel.selectedIndex = CONSULT_MAP[c];
       consultSel.addEventListener("change", syncConsult); syncConsult();
     }
-    const preKey = new URLSearchParams(location.search).get("service");
-    if (preKey) { const r = radios.find((x) => x.dataset.key === preKey || x.value === preKey); if (r) { r.checked = true; chosen.textContent = labelOf(r); goStep(2, false); } }
+    if (qs.get("transport")) {
+      if (transportBox) { transportBox.checked = true; transportBox.closest("[data-transport]").classList.add("is-flag"); }
+      const tc = checks.find((x) => x.dataset.key === "transport"); if (tc) tc.checked = true;
+    }
+    (qs.get("service") || "").split(",").filter(Boolean).forEach((k) => { const c = checks.find((x) => x.dataset.key === k || x.value === k); if (c) c.checked = true; });
+    if (picker && qs.get("est") && !estSummary().count) picker.open = true;
+    renderEst(); syncChosen();
 
     // Option A: replace with the native GHL form if an ID is set
     if (LIBRE_CONFIG.ghlFormId) {
@@ -700,18 +838,26 @@ const LIBRE_CONFIG = {
       if (!form.consent.checked) ok = false;
       return ok;
     };
-    $$("input:not([type=radio]), select, textarea", form).forEach((f) => f.addEventListener("input", () => { if (f.closest(".has-error")) validate(); }));
+    $$("#f-first, #f-last, #f-phone, #f-email", form).forEach((f) => f.addEventListener("input", () => { if (f.closest(".has-error")) validate(); }));
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       status.classList.remove("is-error");
       if (form.website.value) return; // honeypot
-      if (!selected()) { goStep(1); svcErr.textContent = t("Please choose a service to continue."); return; }
+      const S = estSummary();
+      if (!selected().length && !S.count) { goStep(1); svcErr.textContent = t("Please choose at least one service or treatment."); return; }
       if (!validate()) { status.textContent = t("Please complete the highlighted fields."); status.classList.add("is-error"); const bad = $(".has-error input", form); if (bad) bad.focus(); return; }
-      const data = Object.fromEntries(new FormData(form).entries());
-      delete data.website;
-      data.service = selected().value;
-      data.service_key = selected().dataset.key;
+      const fd = new FormData(form);
+      const data = {};
+      fd.forEach((v, k) => { if (k !== "services" && k !== "website" && !(e.target.elements[k] && e.target.elements[k].hasAttribute && e.target.elements[k].hasAttribute("data-pick"))) data[k] = v; });
+      const sel = selected();
+      data.services = sel.map((c) => c.value).join(", ");
+      data.service = sel.length ? sel[0].value : "Estimate only";
+      data.service_key = sel.map((c) => c.dataset.key).join(",");
+      data.selected_treatments = S.lines.map((l) => `${l.name} x${l.q}${l.unit ? " " + l.unit : ""} (${l.line === null ? "ask" : "$" + l.line + (l.kind === "monthly" ? "/mo" : "")})`).join("; ");
+      data.estimate_total = S.count ? money(S.total) + (S.from ? "+" : "") : "";
+      data.estimate_monthly = S.monthly ? money(S.monthly) + "/mo" : "";
+      data.transport_request = transportBox && transportBox.checked ? "Yes" : "No";
       data.marketing_consent = form.marketing.checked ? "yes" : "no";
       data.source = "Website — " + document.title;
       data.page_url = location.href;
@@ -894,6 +1040,69 @@ const LIBRE_CONFIG = {
       document.body.appendChild(s);
     });
   }
+
+  /* ---------- Travel: real map (Leaflet + OpenStreetMap/CARTO), SVG map stays as fallback ---------- */
+  $$("[data-travel-map]").forEach((el) => {
+    const frame = el.closest(".tmap-frame"), section = el.closest(".travel") || document;
+    const P = {
+      libre: [27.8167, -80.4706], mco: [28.4312, -81.3081], pbi: [26.6832, -80.0956], mia: [25.7959, -80.287], wpb: [26.7127, -80.059]
+    };
+    const I95 = [[26.75, -80.1], [26.93, -80.12], [27.1, -80.2], [27.17, -80.27], [27.3, -80.34], [27.38, -80.39], [27.45, -80.43], [27.6, -80.47], [27.64, -80.48], [27.77, -80.52], [27.82, -80.55], P.libre];
+    const ROUTES = {
+      pbi: { drive: [P.pbi, ...I95] },
+      mco: { drive: [P.mco, [28.455, -81.15], [28.47, -80.95], [28.42, -80.8], [28.25, -80.74], [28.08, -80.7], [27.98, -80.64], [27.86, -80.56], [27.82, -80.55], P.libre] },
+      mia: { rail: [P.mia, [25.7783, -80.1958], [26.1196, -80.17], [26.35, -80.09], [26.46, -80.08], P.wpb], drive: [P.wpb, ...I95] }
+    };
+    let map = null, layers = {}, current = "pbi";
+    const show = (key, fly = true) => {
+      current = key;
+      $$("[data-route-btn]", frame).forEach((b) => b.classList.toggle("is-on", b.dataset.routeBtn === key));
+      $$("[data-route-card]", section).forEach((c) => c.classList.toggle("is-on", c.dataset.routeCard === key));
+      if (!map) return;
+      Object.entries(layers).forEach(([k, g]) => g.eachLayer((l) => { const el2 = l.getElement && l.getElement(); if (el2) { el2.classList.toggle("is-on", k === key); el2.classList.toggle("is-dim", k !== key); } }));
+      if (fly) map.flyToBounds(layers[key].getBounds(), { paddingTopLeft: [40, 70], paddingBottomRight: [60, 80], duration: reduceMotion ? 0 : 1.1, maxZoom: 9 });
+    };
+    $$("[data-route-btn]", frame).forEach((b) => b.addEventListener("click", () => show(b.dataset.routeBtn)));
+    $$("[data-route-card]", section).forEach((c) => c.addEventListener("click", (e) => { if (e.target.closest("a")) return; show(c.dataset.routeCard); if (window.innerWidth < 900) frame.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" }); }));
+    const boot = () => {
+      if (!window.L) return;
+      const L = window.L;
+      map = L.map(el, { zoomControl: false, scrollWheelZoom: false, dragging: !L.Browser.mobile, tap: false, attributionControl: true, zoomSnap: 0.25 });
+      L.control.zoom({ position: "topright" }).addTo(map);
+      // OpenStreetMap standard tiles: free, no API key (attribution required). Toned to the site palette in CSS.
+      const tiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19, crossOrigin: true,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+      }).addTo(map);
+      let loaded = 0, failed = 0;
+      tiles.on("tileload", () => { loaded++; if (loaded >= 2) frame.classList.add("is-live"); });
+      tiles.on("tileerror", () => { failed++; if (!loaded && failed >= 3) frame.classList.remove("is-live"); });
+      const pin = (latlng, cls, html, label) => L.marker(latlng, { icon: L.divIcon({ className: "tm-pin " + cls, html, iconSize: null }), keyboard: false, title: label }).addTo(map);
+      pin(P.libre, "tm-pin--libre", '<span class="tm-pulse"></span><span class="tm-dot"></span><b>LIBRE</b><small>Sebastian</small>', "LIBRE Aesthetics & Wellness");
+      pin(P.pbi, "tm-pin--left", '<span class="tm-dot"></span><b>PBI</b>', "Palm Beach International");
+      pin(P.mco, "", '<span class="tm-dot"></span><b>MCO</b>', "Orlando International");
+      pin(P.mia, "", '<span class="tm-dot"></span><b>MIA</b>', "Miami International");
+      pin(P.wpb, "tm-pin--rail", '<span class="tm-dot"></span><b>WPB</b><small>' + t("Train station") + "</small>", "West Palm Beach station");
+      Object.entries(ROUTES).forEach(([k, r]) => {
+        const g = L.featureGroup().addTo(map);
+        if (r.rail) L.polyline(r.rail, { className: "tm-route tm-route--rail", weight: 3, smoothFactor: 1.5 }).addTo(g);
+        if (r.drive) L.polyline(r.drive, { className: "tm-route", weight: 4, smoothFactor: 1.5 }).addTo(g);
+        layers[k] = g;
+      });
+      map.fitBounds(L.latLngBounds([P.mco, P.mia, P.libre]), { paddingTopLeft: [40, 70], paddingBottomRight: [60, 80] });
+      show(current, false);
+      setTimeout(() => show(current, true), 900);
+    };
+    const start = () => {
+      if (window.L) return boot();
+      const css = document.createElement("link"); css.rel = "stylesheet"; css.href = ROOT + "assets/vendor/leaflet/leaflet.css"; document.head.appendChild(css);
+      const s = document.createElement("script"); s.src = ROOT + "assets/vendor/leaflet/leaflet.js"; s.async = true; s.onload = boot; document.body.appendChild(s);
+    };
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((en) => { if (en.some((x) => x.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: "300px" });
+      io.observe(el);
+    } else start();
+  });
 
   $$("[data-year]").forEach((el) => (el.textContent = new Date().getFullYear()));
 
