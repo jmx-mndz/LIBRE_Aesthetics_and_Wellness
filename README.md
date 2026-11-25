@@ -35,7 +35,7 @@ const LIBRE_CONFIG = {
   phone: "+18775367616",
   ghlFormId: "",          // Option A: native GHL form ID
   formWebhook: "",        // Option B: GHL Inbound Webhook URL (website form → workflow W1)
-  calendarUrl: "",        // LIBRE Consultation calendar link
+  calendarUrl: "https://api.leadconnectorhq.com/widget/bookings/libre-consultation",
   chatWidgetId: "6b055c14f04219e8b659de35",   // Laura chat widget
   shopUrl: "https://nbxwellness.com/store/libre-aesthetics/index",
   ...
