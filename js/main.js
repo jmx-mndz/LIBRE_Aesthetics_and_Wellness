@@ -17,7 +17,7 @@ const LIBRE_CONFIG = {
   formWebhook: "",
 
   // Your NEW GHL calendar link (shown after the form, and as "book directly").
-  calendarUrl: "",
+  calendarUrl: "https://api.leadconnectorhq.com/widget/bookings/libre-consultation",
 
   // GHL chat widget (already live on the current site)
   chatWidgetId: "6b055c14f04219e8b659de35",
