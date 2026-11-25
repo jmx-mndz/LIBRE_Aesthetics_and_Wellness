@@ -19,6 +19,10 @@ const LIBRE_CONFIG = {
   // Your NEW GHL calendar link (shown after the form, and as "book directly").
   calendarUrl: "https://api.leadconnectorhq.com/widget/bookings/libre-consultation",
 
+  // DreamSculpt Academy: paste the link between the quotes when it is ready.
+  // The DreamSculpt buttons switch on automatically (until then they show "Link coming soon").
+  dreamSculptUrl: "",
+
   // GHL chat widget (already live on the current site)
   chatWidgetId: "6b055c14f04219e8b659de35",
 
@@ -1102,6 +1106,15 @@ const LIBRE_CONFIG = {
       const io = new IntersectionObserver((en) => { if (en.some((x) => x.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: "300px" });
       io.observe(el);
     } else start();
+  });
+
+  /* ---------- DreamSculpt Academy buttons: live once LIBRE_CONFIG.dreamSculptUrl is set ---------- */
+  $$("[data-dreamsculpt]").forEach((a) => {
+    if (LIBRE_CONFIG.dreamSculptUrl) {
+      a.href = LIBRE_CONFIG.dreamSculptUrl; a.target = "_blank"; a.rel = "noopener";
+      a.classList.remove("is-soon"); a.removeAttribute("aria-disabled");
+      const soon = $("[data-soon]", a); if (soon) soon.remove();
+    } else a.addEventListener("click", (e) => e.preventDefault());
   });
 
   $$("[data-year]").forEach((el) => (el.textContent = new Date().getFullYear()));
