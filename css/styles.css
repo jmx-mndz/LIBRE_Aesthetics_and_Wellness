@@ -2373,3 +2373,21 @@ body.est-open .back-to-top, body.est-open .lang-tip { opacity: 0; pointer-events
 .mobile-bar .primary { box-shadow: 0 0 0 1px rgba(5,98,122,.35); }
 .topbar { background: var(--brand); }
 .theme-light a:not(.btn):not(.link-arrow):not([class*="tile"]):not([class*="card"]):hover, .bg-pearl a:not(.btn):not(.link-arrow):hover { color: var(--brand); }
+
+/* ---------- v22 · Provider training card ---------- */
+.train-card { display: grid; grid-template-columns: auto 1fr; gap: 1rem; align-items: start; padding: 1.3rem 1.4rem; border-radius: var(--radius); position: relative; overflow: hidden;
+  background: linear-gradient(135deg, rgba(5,98,122,.1), rgba(228,203,183,.16)); border: 1px solid rgba(214,188,143,.45); }
+.train-card::after { content: ""; position: absolute; right: -40px; bottom: -40px; width: 140px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(86,168,186,.22), transparent 70%); pointer-events: none; transition: transform .8s var(--ease); }
+.train-card:hover::after { transform: scale(1.25); }
+.train-card__ic { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; background: var(--brand); color: #f3e2c0; box-shadow: 0 8px 18px -10px rgba(5,98,122,.7); }
+.train-card__ic svg { width: 22px; }
+.train-card h3 { font-size: 1.45rem; margin: .25rem 0 .35rem; color: var(--heading); }
+.train-card p { margin: 0 0 .9rem; font-size: .92rem; color: var(--text); }
+.train-card__btns { display: flex; flex-wrap: wrap; gap: .5rem; }
+.train-card .btn small { display: block; font-size: .58rem; letter-spacing: .12em; opacity: .75; margin-top: .1rem; }
+.train-card .btn.is-soon { cursor: default; opacity: .78; flex-direction: column; align-items: center; }
+.train-card .btn.is-soon:hover { transform: none; }
+.train-link { display: inline-flex; align-items: center; gap: .4rem; font-size: .86rem; letter-spacing: .02em; color: var(--accent); border-bottom: 1px solid rgba(228,203,183,.4); padding-bottom: .1rem; }
+.train-link svg { width: 15px; transition: transform .35s var(--ease); }
+.train-link:hover svg { transform: translateX(4px); }
+@media (max-width: 560px) { .train-card { grid-template-columns: 1fr; } .train-card__btns .btn { flex: 1 1 100%; justify-content: center; } }
