@@ -198,24 +198,29 @@
               <div class="form-status field--full" role="alert"></div>
               <div class="form-actions field--full">
                 <button class="btn btn--ghost btn-back" type="button" data-back aria-label="Volver al paso uno"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
-                <button class="btn" type="submit">Solicitar mi consulta <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+                <button class="btn" type="submit">Continuar para elegir horario <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
               </div>
             </div>
           </fieldset>
         </form>
       </div>
       <div class="form-success" role="status">
-        <div class="icon-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></div>
-        <h2>Gracias — <em>hemos recibido su solicitud</em></h2>
-        <p class="muted">Nuestra Coordinadora de Atención al Paciente le escribirá en breve. Si eligió la evaluación gratuita por fotos, recibirá un enlace seguro para subir sus fotos.</p>
+        <div class="icon-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <h2>Gracias, <em>ahora elija su horario</em></h2>
+        <p class="muted" data-cal-note-free>Elija abajo un horario para su visita gratuita. Si eligió la evaluación por fotos, también le enviaremos un enlace seguro para subir sus fotos.</p>
+        <p class="muted" data-cal-note-paid hidden>Elija abajo un horario para su consulta con la Dra. Thomas. La tarifa de $75 se cobra al confirmar su horario y se aplica a su tratamiento.</p>
+        <div class="cal-embed" data-cal-embed></div>
         <div class="btn-row btn-row--center"><a class="btn btn--ghost" href="index.html">Volver al inicio</a></div>
       </div>
     </div>
     <aside class="grid" style="gap:1.2rem">
       <div class="info-card info-card--gold reveal" data-calendar-wrap>
         <h3>¿Ya sabe lo que quiere?</h3>
-        <p>Los pacientes que regresan pueden elegir un horario directamente en nuestro calendario.</p>
-        <a class="btn btn--sm" href="#" data-calendar-link>Abrir el calendario <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <p>Elija su horario directamente. La consulta con la Dra. Thomas cuesta $75, se paga al reservar y se aplica a su tratamiento.</p>
+        <div class="btn-row btn-row--stack">
+          <a class="btn btn--sm" href="#" data-calendar-link>Llamada gratuita con la coordinadora <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn--sm btn--ghost" href="#" data-doctor-calendar-link>Dra. Thomas · $75, pago en línea <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
       </div>
       <div class="info-card reveal">
         <h3>Qué esperar</h3>
