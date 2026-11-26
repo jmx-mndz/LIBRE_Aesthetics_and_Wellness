@@ -198,24 +198,29 @@
               <div class="form-status field--full" role="alert"></div>
               <div class="form-actions field--full">
                 <button class="btn btn--ghost btn-back" type="button" data-back aria-label="Back to step one"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
-                <button class="btn" type="submit">Request My Consultation <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+                <button class="btn" type="submit">Continue to Choose a Time <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
               </div>
             </div>
           </fieldset>
         </form>
       </div>
       <div class="form-success" role="status">
-        <div class="icon-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg></div>
-        <h2>Thank you — <em>we’ve received your request</em></h2>
-        <p class="muted">Our Patient Care Coordinator will text you shortly. If you chose a free photo assessment, look for a secure link to upload your photos.</p>
+        <div class="icon-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <h2>Thank you, <em>now choose your time</em></h2>
+        <p class="muted" data-cal-note-free>Pick a time for your free visit below. If you chose a photo assessment, we’ll also text you a secure link to upload your photos.</p>
+        <p class="muted" data-cal-note-paid hidden>Pick a time for your consultation with Dr. Thomas below. The $75 fee is charged when you confirm your time and is applied to your treatment.</p>
+        <div class="cal-embed" data-cal-embed></div>
         <div class="btn-row btn-row--center"><a class="btn btn--ghost" href="index.html">Back to Home</a></div>
       </div>
     </div>
     <aside class="grid" style="gap:1.2rem">
       <div class="info-card info-card--gold reveal" data-calendar-wrap>
         <h3>Already know what you want?</h3>
-        <p>Returning patients can pick a time directly on our calendar.</p>
-        <a class="btn btn--sm" href="#" data-calendar-link>Open the Calendar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <p>Pick a time directly. The consultation with Dr. Thomas is $75, paid when you book and applied to your treatment.</p>
+        <div class="btn-row btn-row--stack">
+          <a class="btn btn--sm" href="#" data-calendar-link>Free Coordinator Call <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn--sm btn--ghost" href="#" data-doctor-calendar-link>Dr. Thomas · $75, pay online <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        </div>
       </div>
       <div class="info-card reveal">
         <h3>What to expect</h3>
