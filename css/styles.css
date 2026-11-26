@@ -2391,3 +2391,8 @@ body.est-open .back-to-top, body.est-open .lang-tip { opacity: 0; pointer-events
 .train-link svg { width: 15px; transition: transform .35s var(--ease); }
 .train-link:hover svg { transform: translateX(4px); }
 @media (max-width: 560px) { .train-card { grid-template-columns: 1fr; } .train-card__btns .btn { flex: 1 1 100%; justify-content: center; } }
+.btn-row--stack { display: grid; gap: .5rem; }
+.btn-row--stack .btn { justify-content: center; }
+.cal-embed { margin: 1.4rem 0 1rem; border-radius: 16px; overflow: hidden; background: #fff; border: 1px solid rgba(169,131,79,.3); min-height: 200px; }
+.cal-embed iframe { display: block; }
+.is-sent .form-success { text-align: center; }
