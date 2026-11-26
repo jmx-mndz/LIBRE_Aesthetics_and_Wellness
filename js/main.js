@@ -17,7 +17,12 @@ const LIBRE_CONFIG = {
   formWebhook: "",
 
   // Your NEW GHL calendar link (shown after the form, and as "book directly").
-  calendarUrl: "https://api.leadconnectorhq.com/widget/bookings/libre-consultation",
+  // FREE calendar: free photo assessment + free Patient Care Coordinator call
+  calendarUrl: "https://api.leadconnectorhq.com/widget/booking/bgJETxQPWBT1Sadpgt5j",
+
+  // PAID calendar for the $75 consultation with Dr. Thomas (payment taken at booking).
+  // PAID calendar: consultation with Dr. Thomas, $75 charged at booking (payment mode Live).
+  doctorCalendarUrl: "https://api.leadconnectorhq.com/widget/booking/OXGJrwDU7IHIWrmbbTcq",
 
   // DreamSculpt Academy: paste the link between the quotes when it is ready.
   // The DreamSculpt buttons switch on automatically (until then they show "Link coming soon").
@@ -90,7 +95,9 @@ const LIBRE_CONFIG = {
     "Please choose at least one service or treatment.": "Elija al menos un servicio o tratamiento.",
     "units": "unidades", "min": "min", "Remove": "Quitar", "Ask": "Consultar", "Price at consultation": "Precio en la consulta",
     "Fewer": "Menos", "More": "Más", "Added to your estimate": "Agregado a su estimado", "Removed from your estimate": "Quitado de su estimado",
-    "/ month": "/ mes", "Train station": "Estación de tren", "item": "artículo", "items": "artículos", "Estimate": "Estimado",
+    "/ month": "/ mes", "Train station": "Estación de tren",
+    "Choose a time next. We’ll also text you a secure link to upload your photos.": "Luego elija un horario. También le enviaremos un enlace seguro para subir sus fotos.",
+    "You’ll pick your time and pay the $75 online. It’s applied to your treatment.": "Elegirá su horario y pagará los $75 en línea. Se aplican a su tratamiento.", "item": "artículo", "items": "artículos", "Estimate": "Estimado",
     "Please enter your first name.": "Por favor escriba su nombre.",
     "Please enter your last name.": "Por favor escriba su apellido.",
     "Please enter a valid phone number.": "Por favor escriba un número de teléfono válido.",
@@ -795,9 +802,9 @@ const LIBRE_CONFIG = {
     const syncConsult = () => {
       if (!consultSel || !consultHint) return;
       const i = consultSel.selectedIndex;
-      consultHint.textContent = i === 0 ? t("We’ll text you a secure link to upload your photos.")
+      consultHint.textContent = i === 0 ? t("Choose a time next. We’ll also text you a secure link to upload your photos.")
         : i === 1 ? t("Meet in person, by phone or virtually. No cost.")
-        : t("The $75 fee is applied to your treatment.");
+        : t("You’ll pick your time and pay the $75 online. It’s applied to your treatment.");
     };
     const qs = new URLSearchParams(location.search);
     if (consultSel) {
@@ -818,6 +825,10 @@ const LIBRE_CONFIG = {
       $(".form-body", card).innerHTML = `<iframe src="https://api.leadconnectorhq.com/widget/form/${LIBRE_CONFIG.ghlFormId}" style="width:100%;min-height:760px;border:0;border-radius:12px" title="LIBRE inquiry form" loading="lazy"></iframe>`;
       loadScript("https://link.msgsndr.com/js/form_embed.js");
     }
+    $$("[data-doctor-calendar-link]").forEach((a) => {
+      if (LIBRE_CONFIG.doctorCalendarUrl) { a.href = LIBRE_CONFIG.doctorCalendarUrl; a.target = "_blank"; a.rel = "noopener"; }
+      else a.hidden = true;
+    });
     $$("[data-calendar-link]").forEach((a) => {
       if (LIBRE_CONFIG.calendarUrl) { a.href = LIBRE_CONFIG.calendarUrl; a.target = "_blank"; a.rel = "noopener"; }
       else a.closest("[data-calendar-wrap]")?.setAttribute("hidden", "");
@@ -869,19 +880,26 @@ const LIBRE_CONFIG = {
       const btn = $("button[type=submit]", form);
       btn.disabled = true; btn.dataset.label = btn.innerHTML; btn.textContent = t("Sending…");
       try {
-        if (!LIBRE_CONFIG.formWebhook) throw new Error("not-connected");
-        await fetch(LIBRE_CONFIG.formWebhook, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(data).toString() });
-        inds.forEach((li) => { li.classList.add("is-done"); li.classList.remove("is-active"); });
-        card.classList.add("is-sent");
-        card.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "center" });
-        if (LIBRE_CONFIG.calendarUrl) {
-          const q = new URLSearchParams({ first_name: data.first_name, last_name: data.last_name, email: data.email, phone: data.phone });
-          setTimeout(() => { window.location.href = LIBRE_CONFIG.calendarUrl + (LIBRE_CONFIG.calendarUrl.includes("?") ? "&" : "?") + q.toString(); }, 1800);
+        // Send the details to GHL (W1 workflow) when the webhook is set. The calendar opens either way.
+        if (LIBRE_CONFIG.formWebhook) {
+          await fetch(LIBRE_CONFIG.formWebhook, { method: "POST", mode: "no-cors", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: new URLSearchParams(data).toString() }).catch(() => {});
         }
+        inds.forEach((li) => { const k = +li.dataset.stepInd; li.classList.toggle("is-done", k < 3); li.classList.toggle("is-active", k === 3); });
+        const isDoctor = consultSel && consultSel.selectedIndex === 2;
+        const calUrl = isDoctor ? LIBRE_CONFIG.doctorCalendarUrl : LIBRE_CONFIG.calendarUrl;
+        $("[data-cal-note-free]", card).hidden = isDoctor;
+        $("[data-cal-note-paid]", card).hidden = !isDoctor;
+        const box = $("[data-cal-embed]", card);
+        if (calUrl && box) {
+          const id = calUrl.split("/").pop();
+          const q = new URLSearchParams({ first_name: data.first_name, last_name: data.last_name, email: data.email, phone: data.phone });
+          box.innerHTML = `<iframe src="${calUrl}?${q.toString()}" allow="payment" style="width:100%;border:none;overflow:hidden;min-height:760px" scrolling="no" id="${id}_${Date.now()}" title="${isDoctor ? "Consultation with Dr. Thomas" : "LIBRE free visit"}"></iframe>`;
+          if (!document.querySelector('script[src*="form_embed.js"]')) loadScript("https://link.msgsndr.com/js/form_embed.js");
+        }
+        card.classList.add("is-sent");
+        card.scrollIntoView({ behavior: reduceMotion ? "auto" : "smooth", block: "start" });
       } catch (err) {
-        status.innerHTML = err.message === "not-connected"
-          ? t("Our online form is being connected. Please call or text ") + "<a href='tel:" + LIBRE_CONFIG.phone + "'>(877) 536-7616</a>" + t(" and our team will book you right away.")
-          : t("Something went wrong. Please call or text ") + "<a href='tel:" + LIBRE_CONFIG.phone + "'>(877) 536-7616</a>.";
+        status.innerHTML = t("Something went wrong. Please call or text ") + "<a href='tel:" + LIBRE_CONFIG.phone + "'>(877) 536-7616</a>.";
         status.classList.add("is-error");
       } finally { btn.disabled = false; btn.innerHTML = btn.dataset.label; }
     });
