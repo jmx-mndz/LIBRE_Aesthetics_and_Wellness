@@ -37,17 +37,17 @@ const LIBRE_CONFIG = {
   /* ---- REELS (3D auto-playing carousel) ----------------------------------
      Videos live in assets/video/reels/<id>.mp4 and posters in assets/img/reels/<id>.webp.
      To host a reel on GHL instead, paste its Media Storage link into "video".
-     "cats" decides which pages show it: endolift, gluteal, tattoo, face, body, skin, wellness, doctor
+     "cats" decides which pages show it: endolift, gluteal, tattoo, face, body, skin, wellness, doctor, queen (Endolift Queen page)
      (every reel also shows on the Home and Results pages).                  */
   reels: [
-    { id: "endolift-customizable", tag: "Endolift® · Face", title: "Endolift® is customizable", cats: ["endolift", "face"] },
-    { id: "before-meets-after", tag: "Endolift® · Real result", title: "Before meets after", cats: ["endolift", "face", "results"] },
-    { id: "dr-thomas-approach", tag: "Dr. Thomas · Philosophy", title: "My approach: less is more", cats: ["doctor", "face"] },
+    { id: "endolift-customizable", tag: "Endolift® · Face", title: "Endolift® is customizable", cats: ["endolift", "face", "queen"] },
+    { id: "before-meets-after", tag: "Endolift® · Real result", title: "Before meets after", cats: ["endolift", "face", "results", "queen"] },
+    { id: "dr-thomas-approach", tag: "Dr. Thomas · Philosophy", title: "My approach: less is more", cats: ["doctor", "face", "queen"] },
     { id: "best-feeling", tag: "Body · Patient moment", title: "The best feeling", cats: ["body", "results"] },
     { id: "lightscan-eyes", tag: "Laser & Skin", title: "Lightscan eyes — tighten & brighten", cats: ["skin", "face"] },
-    { id: "endolift-testimony", tag: "Client feedback", title: "“Big difference — I love it!”", cats: ["endolift", "face", "results"] },
-    { id: "dr-thomas-endolift-laser", tag: "Dr. Thomas explains", title: "How Endolift® works", cats: ["endolift", "doctor", "face", "body"] },
-    { id: "endolift-abdomen", tag: "Endolift® · Abdomen", title: "Before & after Endolift®", cats: ["endolift", "body", "results"] },
+    { id: "endolift-testimony", tag: "Client feedback", title: "“Big difference — I love it!”", cats: ["endolift", "face", "results", "queen"] },
+    { id: "dr-thomas-endolift-laser", tag: "Dr. Thomas explains", title: "How Endolift® works", cats: ["endolift", "doctor", "face", "body", "queen"] },
+    { id: "endolift-abdomen", tag: "Endolift® · Abdomen", title: "Before & after Endolift®", cats: ["endolift", "body", "results", "queen"] },
     { id: "hormonal-balance", tag: "Dr. Thomas explains", title: "Signs of hormonal imbalance", cats: ["wellness", "doctor"] },
     { id: "endolift-radiesse", tag: "Facial artistry", title: "Endolift® + Radiesse® balancing", cats: ["endolift", "face"] },
     { id: "dr-thomas-nutrition", tag: "Dr. Thomas · Wellness", title: "Nutrition is the basis of everything", cats: ["doctor", "wellness"] },
@@ -61,7 +61,7 @@ const LIBRE_CONFIG = {
     { id: "post-lipo-fibrosis", tag: "Body · Fibrosis care", title: "Treating post-lipo fibrosis", cats: ["body"] },
     { id: "gold-incision-gluteal", tag: "Gold Incision® · Gluteal", title: "Gold Incision® & Gluteal Harmonization", cats: ["gluteal", "body"] },
     { id: "dr-nichols-tattoo-removal", tag: "Dr. Nichols · Tattoo removal", title: "Have you ever had a tattoo you regret?", cats: ["tattoo", "skin"] },
-    { id: "dr-thomas-gluteal-award", tag: "Dr. Thomas · Recognition", title: "Gluteal Harmonization 360° Masterclass", cats: ["gluteal", "doctor", "body"] }
+    { id: "dr-thomas-gluteal-award", tag: "Dr. Thomas · Recognition", title: "Gluteal Harmonization 360° Masterclass", cats: ["gluteal", "doctor", "body", "queen"] }
   ],
 
   reelsVideoPath: "assets/video/reels/",
@@ -512,6 +512,38 @@ const LIBRE_CONFIG = {
     skewEls.forEach((el) => el.classList.add("skew-on-scroll"));
     kick();
   })();
+
+  /* ---------- Endolift Queen page: typewriter answer + timeline progress ---------- */
+  $$("[data-typewrite]").forEach((el) => {
+    if (reduceMotion || !("IntersectionObserver" in window)) return;
+    const full = el.innerHTML;
+    const plain = el.textContent.replace(/\s+/g, " ").trim();
+    el.style.minHeight = el.offsetHeight + "px";
+    el.innerHTML = "";
+    el.classList.add("is-typing");
+    const io = new IntersectionObserver((ents) => ents.forEach((en) => {
+      if (!en.isIntersecting) return;
+      io.disconnect();
+      let i = 0;
+      const tick = () => {
+        i += 2;
+        el.textContent = plain.slice(0, i);
+        if (i < plain.length) setTimeout(tick, 18);
+        else { el.innerHTML = full; el.classList.remove("is-typing"); el.style.minHeight = ""; }
+      };
+      setTimeout(tick, 500);
+    }), { threshold: 0.5 });
+    io.observe(el);
+  });
+  $$("[data-q-timeline]").forEach((tl) => {
+    const upd = () => {
+      const r = tl.getBoundingClientRect(), vh = innerHeight;
+      const p = Math.max(0, Math.min(1, (vh * 0.7 - r.top) / r.height));
+      tl.style.setProperty("--q-p", p.toFixed(3));
+      $$(".q-step", tl).forEach((s) => s.classList.toggle("is-lit", s.getBoundingClientRect().top < vh * 0.7));
+    };
+    addEventListener("scroll", upd, { passive: true }); addEventListener("resize", upd); upd();
+  });
 
   /* ---------- Count-up numbers ([data-count]) ---------- */
   const counters = $$("[data-count]");
