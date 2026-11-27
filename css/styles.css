@@ -2396,3 +2396,96 @@ body.est-open .back-to-top, body.est-open .lang-tip { opacity: 0; pointer-events
 .cal-embed { margin: 1.4rem 0 1rem; border-radius: 16px; overflow: hidden; background: #fff; border: 1px solid rgba(169,131,79,.3); min-height: 200px; }
 .cal-embed iframe { display: block; }
 .is-sent .form-success { text-align: center; }
+
+/* ===== v23 · The Endolift Queen™ page + ribbon/badge ===== */
+.q-crown { width: 44px; height: 28px; flex-shrink: 0; overflow: visible; }
+.q-crown path { fill: none; stroke: var(--gold-300); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; stroke-dasharray: 1; stroke-dashoffset: 1; animation: q-draw 1.6s var(--ease) .3s forwards; }
+.q-crown circle { fill: var(--gold-300); transform-box: fill-box; transform-origin: center; animation: q-twinkle 2.8s ease-in-out infinite; }
+.q-crown circle:nth-of-type(2) { animation-delay: -.9s; } .q-crown circle:nth-of-type(3) { animation-delay: -1.8s; }
+@keyframes q-draw { to { stroke-dashoffset: 0; } }
+@keyframes q-twinkle { 0%,100% { transform: scale(.7); opacity: .6; } 50% { transform: scale(1.25); opacity: 1; } }
+.q-shimmer { background: linear-gradient(100deg, #c9a27e 0%, #f6e7d6 22%, #e4cbb7 40%, #b08868 60%, #f6e7d6 80%, #c9a27e 100%); background-size: 220% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: q-shine 5s linear infinite; }
+@keyframes q-shine { to { background-position: -220% 0; } }
+.q-title { display: inline-flex; align-items: center; gap: .7rem; font-family: var(--font-serif); font-size: clamp(1.25rem, 1rem + 1vw, 1.75rem); letter-spacing: .04em; margin-bottom: .6rem; }
+.q-hero__sub { font-size: var(--fs-xs); letter-spacing: .22em; text-transform: uppercase; color: var(--gold-300); margin: -.2rem 0 1rem; }
+.q-hero .arch { box-shadow: 0 0 0 1px rgba(228,203,183,.45), 0 30px 80px -20px rgba(228,203,183,.35); }
+.q-arch::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 35%, rgba(255,240,220,.28) 50%, transparent 65%); background-size: 250% 100%; animation: q-sweep 6s ease-in-out infinite; pointer-events: none; }
+@keyframes q-sweep { 0%, 55% { background-position: 150% 0; } 100% { background-position: -100% 0; } }
+.q-sparkles { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.q-sparkles i { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #f6e7d6; box-shadow: 0 0 10px 2px rgba(228,203,183,.7); opacity: 0; animation: q-float 7s linear infinite; }
+.q-sparkles i:nth-child(1) { left: 6%; animation-delay: 0s; } .q-sparkles i:nth-child(2) { left: 14%; animation-delay: -1.2s; }
+.q-sparkles i:nth-child(3) { left: 22%; animation-delay: -3.1s; } .q-sparkles i:nth-child(4) { left: 31%; animation-delay: -4.6s; }
+.q-sparkles i:nth-child(5) { left: 39%; animation-delay: -2.2s; } .q-sparkles i:nth-child(6) { left: 47%; animation-delay: -5.4s; }
+.q-sparkles i:nth-child(7) { left: 55%; animation-delay: -.6s; } .q-sparkles i:nth-child(8) { left: 63%; animation-delay: -3.8s; }
+.q-sparkles i:nth-child(9) { left: 70%; animation-delay: -6.1s; } .q-sparkles i:nth-child(10) { left: 77%; animation-delay: -1.9s; }
+.q-sparkles i:nth-child(11) { left: 84%; animation-delay: -4.2s; } .q-sparkles i:nth-child(12) { left: 90%; animation-delay: -2.8s; }
+.q-sparkles i:nth-child(13) { left: 95%; animation-delay: -5.9s; } .q-sparkles i:nth-child(14) { left: 3%; animation-delay: -6.6s; }
+@keyframes q-float { 0% { transform: translateY(105vh) scale(.6); opacity: 0; } 15% { opacity: .9; } 85% { opacity: .7; } 100% { transform: translateY(-10vh) scale(1.1); opacity: 0; } }
+.q-hero .page-hero__grid { position: relative; z-index: 2; }
+
+/* AI answer card */
+.q-chat { margin: 0; background: linear-gradient(160deg, #0c3b4a, #082b37); color: #eef4f3; border-radius: 22px; padding: 1.1rem 1.2rem 1.3rem; border: 1px solid rgba(228,203,183,.28); box-shadow: 0 30px 70px -30px rgba(8,43,55,.65); position: relative; overflow: hidden; transition: transform .6s var(--ease), box-shadow .6s var(--ease); }
+.q-chat:hover { transform: translateY(-4px) rotate(-.4deg); box-shadow: 0 40px 80px -30px rgba(8,43,55,.75), 0 0 0 1px rgba(228,203,183,.4); }
+.q-chat::before { content: ""; position: absolute; inset: -40% -20% auto auto; width: 70%; height: 80%; background: radial-gradient(closest-side, rgba(228,203,183,.18), transparent); pointer-events: none; }
+.q-chat__bar { display: flex; align-items: center; gap: .35rem; margin-bottom: 1rem; font-size: var(--fs-xs); letter-spacing: .18em; text-transform: uppercase; color: var(--gold-300); }
+.q-chat__bar i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.18); }
+.q-chat__bar span { margin-left: auto; }
+.q-chat__q { margin-left: auto; max-width: 85%; width: fit-content; background: rgba(255,255,255,.1); padding: .7rem 1rem; border-radius: 16px 16px 4px 16px; margin-bottom: .9rem; font-size: .98rem; }
+.q-chat__a { background: rgba(228,203,183,.1); border: 1px solid rgba(228,203,183,.22); padding: .9rem 1.05rem; border-radius: 16px 16px 16px 4px; line-height: 1.6; font-size: .98rem; }
+.q-chat__a strong { color: #f6e7d6; font-weight: 500; }
+.q-chat__a.is-typing::after { content: ""; display: inline-block; width: 2px; height: 1.05em; background: var(--gold-300); margin-left: 2px; vertical-align: -2px; animation: q-caret .8s steps(1) infinite; }
+@keyframes q-caret { 50% { opacity: 0; } }
+.q-chat figcaption { margin-top: .9rem; font-size: .78rem; color: rgba(238,244,243,.6); }
+
+/* Credential timeline */
+.q-timeline { list-style: none; margin: 0 auto; padding: 0; max-width: 960px; position: relative; display: grid; gap: 1.4rem; --q-p: 0; }
+.q-timeline::before, .q-timeline::after { content: ""; position: absolute; top: 0; bottom: 0; left: 15px; width: 2px; border-radius: 2px; }
+.q-timeline::before { background: rgba(228,203,183,.18); }
+.q-timeline::after { background: linear-gradient(var(--gold-300), var(--gold)); transform-origin: top; transform: scaleY(var(--q-p)); box-shadow: 0 0 12px rgba(228,203,183,.8); }
+.q-step { position: relative; padding-left: 3rem; }
+.q-step__dot { position: absolute; left: 6px; top: 1.4rem; width: 20px; height: 20px; border-radius: 50%; background: var(--teal-950); border: 2px solid rgba(228,203,183,.45); z-index: 1; transition: background .5s, border-color .5s, box-shadow .5s, transform .5s var(--ease); }
+.q-step.is-lit .q-step__dot { background: var(--gold-300); border-color: var(--gold); box-shadow: 0 0 0 6px rgba(228,203,183,.25), 0 0 18px rgba(228,203,183,.9); transform: scale(1.08); }
+.q-step__card { background: linear-gradient(160deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); backdrop-filter: blur(6px); color: #e9f1f0; border-radius: 18px; padding: 1.2rem 1.35rem; border: 1px solid rgba(228,203,183,.2); box-shadow: 0 18px 40px -30px rgba(0,0,0,.6); transition: transform .5s var(--ease), box-shadow .5s var(--ease), border-color .5s; }
+.q-step__card:hover { transform: translateY(-4px); box-shadow: 0 26px 50px -28px rgba(0,0,0,.7), 0 0 30px -10px rgba(228,203,183,.35); border-color: rgba(228,203,183,.5); }
+.q-step__card h3 { color: #f6efe6; }
+.q-step__card p { color: rgba(233,241,240,.78); }
+.q-step__when { font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; color: var(--gold-300); }
+.q-step__card h3 { margin: .3rem 0 .35rem; font-size: clamp(1.3rem, 1.1rem + .6vw, 1.6rem); }
+.q-step__card p { margin: 0 0 .4rem; }
+@media (min-width: 900px) {
+  .q-timeline::before, .q-timeline::after { left: 50%; margin-left: -1px; }
+  .q-step { width: 50%; padding: 0 3rem 0 0; }
+  .q-step:nth-child(even) { margin-left: 50%; padding: 0 0 0 3rem; }
+  .q-step__dot { left: auto; right: -10px; }
+  .q-step:nth-child(even) .q-step__dot { left: -10px; right: auto; }
+  .q-step:nth-child(odd) .q-step__card { text-align: right; }
+  .q-step { margin-top: -2.2rem; } .q-step:first-child { margin-top: 0; }
+}
+.q-cards .feature { transition: transform .5s var(--ease), box-shadow .5s var(--ease); }
+.q-cards .feature:hover { transform: translateY(-6px); }
+
+/* Ribbon (home + Endolift) */
+.q-ribbon { display: block; overflow: hidden; background: linear-gradient(90deg, #a9835f, #e4cbb7 30%, #f6e7d6 50%, #e4cbb7 70%, #a9835f); color: var(--teal-900); border-block: 1px solid rgba(8,43,55,.15); position: relative; z-index: 3; }
+.q-ribbon__track { display: flex; width: max-content; animation: q-marq 38s linear infinite; }
+.q-ribbon:hover .q-ribbon__track { animation-play-state: paused; }
+.q-ribbon span { display: inline-flex; align-items: center; gap: .55rem; padding: .7rem 1.6rem; font-size: var(--fs-xs); letter-spacing: .2em; text-transform: uppercase; white-space: nowrap; font-weight: 500; }
+.q-ribbon span + span::before { content: "✦"; margin-right: 1.6rem; opacity: .55; letter-spacing: 0; }
+.q-ribbon .q-crown { width: 26px; height: 17px; }
+.q-ribbon .q-crown path { stroke: var(--teal-900); stroke-dashoffset: 0; animation: none; }
+.q-ribbon .q-crown circle { fill: var(--teal-900); }
+@keyframes q-marq { to { transform: translateX(-33.333%); } }
+
+/* Badge (Endolift + Expertise) */
+.q-badge { display: inline-flex; align-items: center; gap: .8rem; margin: .4rem 0 1.2rem; padding: .65rem 1.1rem .65rem .9rem; border-radius: 999px; background: linear-gradient(120deg, #0a4658, #0d5c70); color: #fff; text-decoration: none; border: 1px solid rgba(228,203,183,.5); box-shadow: 0 14px 30px -18px rgba(8,43,55,.7); position: relative; overflow: hidden; transition: transform .4s var(--ease), box-shadow .4s var(--ease); }
+.q-badge::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, rgba(246,231,214,.35) 50%, transparent 70%); background-size: 250% 100%; animation: q-sweep 4.5s ease-in-out infinite; }
+.q-badge:hover { transform: translateY(-2px); box-shadow: 0 20px 36px -18px rgba(8,43,55,.8); }
+.q-badge small { display: block; font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; color: var(--gold-300); }
+.q-badge strong { font-family: var(--font-serif); font-weight: 500; font-size: 1.15rem; }
+.q-badge > svg:last-child { width: 18px; height: 18px; color: var(--gold-300); }
+a.float-card { text-decoration: none; color: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  .q-shimmer, .q-ribbon__track, .q-sparkles i, .q-arch::after, .q-badge::after, .q-crown circle { animation: none !important; }
+  .q-crown path { stroke-dashoffset: 0; animation: none; }
+  .q-sparkles { display: none; }
+}
